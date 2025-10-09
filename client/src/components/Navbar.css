@@ -1,0 +1,19 @@
+/* src/components/Navbar.css */
+.custom-navbar {
+  background-color: #19183B;
+}
+
+.navbar-brand {
+  color: #E7F2EF !important;
+  font-weight: 600;
+}
+
+.nav-link {
+  color: #A1C2BD !important;
+  transition: 0.3s;
+}
+
+.nav-link:hover {
+  color: #E7F2EF !important;
+  text-decoration: underline;
+}
