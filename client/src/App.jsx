@@ -6,6 +6,8 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Payment from "./pages/Payment";
+import SplashPage from "./pages/SplashPage";
+import Home from "./pages/Home";
 
 
 function App() {
@@ -13,10 +15,11 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<SplashPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/payment" element={<Payment />} />
+        <Route path="/home" element={<Home/>} />
       </Routes>
     </Router>
   );

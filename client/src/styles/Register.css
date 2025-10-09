@@ -1,0 +1,187 @@
+html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+  }
+  
+  /* Main container split layout */
+  .register-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+  }
+  
+  /* Left image section */
+  .register-left {
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .register-left img.register-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Right form section */
+  .register-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #19183B 0%, #708993 100%);
+  }
+  
+  /* Frosted glass form card with glow */
+  .register-card {
+    width: 90%;
+    max-width: 400px;
+    padding: 3rem 2rem;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(161, 194, 189, 0.4);
+    backdrop-filter: blur(10px);
+    color: #E7F2EF;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  .register-card h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #E7F2EF;
+  }
+  
+  /* Input fields */
+  .register-card input {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 25px;
+    border: none;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #E7F2EF;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+  }
+  
+  .register-card input::placeholder {
+    color: #A1C2BD;
+  }
+  
+  .register-card input:focus {
+    background-color: rgba(255, 255, 255, 0.25);
+  }
+  
+  /* Submit button */
+  .register-card button {
+    width: 100%;
+    padding: 12px 15px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 12px;
+    background-color: #A1C2BD;
+    color: #19183B;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .register-card button:hover {
+    background-color: #E7F2EF;
+    transform: translateY(-2px);
+  }
+  
+  /* Responsive layout for mobile */
+  @media (max-width: 768px) {
+    .register-container {
+      flex-direction: column;
+    }
+    .register-left,
+    .register-right {
+      flex: unset;
+      width: 100%;
+      height: 50vh;
+    }
+    .register-right {
+      justify-content: center;
+      align-items: center;
+    }
+    .register-card {
+      width: 90%;
+      padding: 2rem 1.5rem;
+    }
+  }
+
+  .register-right {
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  
+  /* Particle container */
+  .particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  
+  /* Individual particle */
+  .particle {
+    position: absolute;
+    bottom: -10px;
+    background-color: rgba(161, 194, 189, var(--opacity, 0.4));
+    border-radius: 50%;
+    opacity: var(--opacity, 0.4);
+    animation-name: floatGlow;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    filter: drop-shadow(0 0 6px rgba(161, 194, 189, 0.6));
+  }
+  
+  /* Smooth floating, swaying and pulsing */
+  @keyframes floatGlow {
+    0% {
+      transform: translateX(0) translateY(0) scale(1);
+      opacity: var(--opacity, 0.4);
+    }
+    20% {
+      transform: translateX(calc(var(--sway) * 0.6)) translateY(-20vh) scale(1.05);
+      opacity: calc(var(--opacity) + 0.1);
+    }
+    40% {
+      transform: translateX(calc(var(--sway) * -0.4)) translateY(-40vh) scale(1.1);
+      opacity: var(--opacity);
+    }
+    60% {
+      transform: translateX(calc(var(--sway) * 0.3)) translateY(-60vh) scale(1.05);
+      opacity: calc(var(--opacity) + 0.1);
+    }
+    80% {
+      transform: translateX(calc(var(--sway) * -0.2)) translateY(-80vh) scale(1);
+      opacity: var(--opacity);
+    }
+    100% {
+      transform: translateX(0) translateY(-100vh) scale(1);
+      opacity: 0;
+    }
+}
+  
+  
+  
+  
+  
+  

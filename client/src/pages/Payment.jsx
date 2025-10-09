@@ -60,7 +60,7 @@ function Payment() {
   return (
     <div className="payment-page">
       <div className="payment-card">
-        <h2 className="payment-title">International Payment Portal</h2>
+        <h2 className="payment-title">Make a payment</h2>
 
         {message && (
           <div className={isSuccess ? "payment-success" : "payment-errors"}>

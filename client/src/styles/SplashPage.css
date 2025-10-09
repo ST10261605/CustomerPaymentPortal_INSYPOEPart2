@@ -1,0 +1,74 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.splash-container {
+  height: 100vh; /* full viewport */
+  width: 100%;
+  background: linear-gradient(135deg, #19183b 0%, #708993 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center; /* centers vertically */
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+  color: #e7f2ef;
+  overflow: hidden;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 3rem 4rem;
+  border-radius: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+}
+
+/* Spinning globe icon */
+.splash-icon {
+  margin-bottom: 1.5rem;
+}
+
+.splash-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #e7f2ef;
+  margin-bottom: 1.2rem;
+}
+
+.splash-description {
+  font-size: 1.2rem;
+  color: #a1c2bd;
+  max-width: 500px;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Buttons to direct users to register and login */
+.splash-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.splash-btn {
+  background-color: #a1c2bd;
+  color: #19183b;
+  border: none;
+  padding: 0.8rem 1.6rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.splash-btn:hover {
+  background-color: #e7f2ef;
+  transform: translateY(-2px);
+}

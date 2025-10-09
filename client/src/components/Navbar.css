@@ -6,6 +6,7 @@
 .navbar-brand {
   color: #E7F2EF !important;
   font-weight: 600;
+  padding: 12px 15px;
 }
 
 .nav-link {

@@ -1,0 +1,171 @@
+/* Full layout container */
+.login-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    font-family: "Poppins", sans-serif;
+  }
+  
+  /* LEFT SIDE */
+  .login-left {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .login-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.6);
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #19183b90, #70899380);
+  }
+  
+  .left-text {
+    position: absolute;
+    bottom: 10%;
+    left: 10%;
+    color: #e7f2ef;
+    z-index: 2;
+  }
+  
+  .left-text h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  
+  .left-text p {
+    font-size: 1.1rem;
+    color: #a1c2bd;
+  }
+  
+  /* RIGHT SIDE */
+  .login-right {
+    flex: 1;
+    background: linear-gradient(135deg, #19183b, #708993);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Frosted glass card */
+  .login-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.3), 0 0 8px #a1c2bd44;
+    padding: 3rem 4rem;
+    text-align: center;
+    width: 90%;
+    max-width: 420px;
+    color: #e7f2ef;
+    z-index: 2;
+  }
+  
+  .login-card h2 {
+    margin-bottom: 1.5rem;
+    color: #e7f2ef;
+  }
+  
+  /* Inputs */
+  .login-card input {
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    background: rgba(231, 242, 239, 0.15);
+    color: #E7F2EF;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+
+  .login-card input::placeholder {
+    color: #A1C2BD;
+  }
+  
+  .login-card input:focus {
+    background: rgba(231, 242, 239, 0.25);
+    box-shadow: 0 0 6px #a1c2bd;
+  }
+  
+  /* Button */
+  .login-card button {
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: 10px;
+    border: none;
+    background: #a1c2bd;
+    color: #19183b;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .login-card button:hover {
+    background: #e7f2ef;
+    transform: translateY(-2px);
+  }
+  
+  .form-message {
+    margin-top: 1rem;
+    color: #e7f2ef;
+    font-size: 0.9rem;
+  }
+  
+  /* PARTICLES */
+  .particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    right: 0;
+    top: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  
+  .particle {
+    position: absolute;
+    bottom: -10px;
+    background-color: rgba(161, 194, 189, 0.4);
+    border-radius: 50%;
+    animation: floatGlow 18s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px rgba(161, 194, 189, 0.6));
+  }
+  
+  @keyframes floatGlow {
+    0% {
+      transform: translateX(0) translateY(0) scale(1);
+      opacity: 0.4;
+    }
+    25% {
+      transform: translateX(calc(var(--sway) * 0.5)) translateY(-25vh) scale(1.05);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translateX(calc(var(--sway) * -0.3)) translateY(-50vh) scale(1.1);
+      opacity: 0.4;
+    }
+    75% {
+      transform: translateX(calc(var(--sway) * 0.4)) translateY(-75vh) scale(1.05);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateX(0) translateY(-100vh) scale(1);
+      opacity: 0;
+    }
+  }
+  

@@ -1,0 +1,141 @@
+/* src/styles/Home.css */
+.home-container {
+  width: 100%;
+  height: 100vh;
+  background: radial-gradient(circle at center, #19183B 0%, #708993 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+  color: #E7F2EF;
+  font-family: "Poppins", sans-serif;
+}
+
+.home-content {
+  max-width: 700px;
+  padding: 20px;
+  animation: fadeIn 1.5s ease-in-out;
+  position: relative;
+  z-index: 2; /* keep content above the glow */
+}
+
+.hero-title {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    #e7f2ef 0%,
+    #ffffff 20%,
+    #a1c2bd 40%,
+    #e7f2ef 60%,
+    #b0ade6 80%,
+    #7671d3 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shimmerMove 10s linear infinite;
+  text-shadow: 0 0 25px rgba(161, 194, 189, 0.3);
+}
+
+/* Controls the light sweep timing and direction */
+@keyframes shimmerMove {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.cta-button {
+  background-color: #A1C2BD;
+  color: #19183B;
+  border: none;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(161, 194, 189, 0.5);
+  position: relative;
+  z-index: 3;
+}
+
+.cta-button:hover {
+  background-color: #E7F2EF;
+  box-shadow: 0 0 25px rgba(161, 194, 189, 0.8);
+}
+
+.cta-button.outline {
+  background: transparent;
+  color: #E7F2EF;
+  border: 2px solid #A1C2BD;
+}
+
+.cta-button.outline:hover {
+  background: #A1C2BD;
+  color: #19183B;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Glowing Light Halo Animation */
+.glow-behind {
+  position: absolute;
+  width: 800px; 
+  height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(112, 137, 147, 0.55) 0%, transparent 70%);
+  animation: glowShift 14s ease-in-out infinite alternate; /* slower and smoother */
+  filter: blur(180px);
+  z-index: 0;
+  pointer-events: none; /* ensures it's not clickable */
+}
+
+/* Slow, cinematic movement */
+@keyframes glowShift {
+  0% {
+    transform: translate(-80px, -50px) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate(90px, 60px) scale(1.15);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-60px, 40px) scale(1);
+    opacity: 0.65;
+  }
+}
+
+
+
+
