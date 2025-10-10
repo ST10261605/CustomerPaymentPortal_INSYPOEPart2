@@ -23,7 +23,7 @@ function Login() {
     setParticles(particleArray);
   }, []);
 
-  // ✅ Inline field validation
+  // Inline field validation
   const validateField = (name, value) => {
     let error = "";
 
@@ -44,7 +44,7 @@ function Login() {
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  // ✅ Validate before submitting
+  // Validate before submitting
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -71,7 +71,13 @@ function Login() {
     try {
       const res = await api.post("/auth/login", { accountNumber, password });
       setMessage("Login successful!");
+
       localStorage.setItem("accessToken", res.data.accessToken);
+
+  if (res.data && res.data.user) {
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+  }
+      
       navigate("/home");
     } catch (err) {
       setMessage("Login failed. Please check your credentials.");

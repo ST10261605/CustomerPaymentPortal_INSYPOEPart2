@@ -141,8 +141,13 @@ const Register = () => {
     }
 
     try {
-      await api.post("/auth/register", form);
+      const response = await api.post("/auth/register", form);
       setMessage("Registration successful! Redirecting to login...");
+      
+      if (response.data && response.data.user) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+
       setTimeout(() => {
         navigate("/login");
       }, 2000);

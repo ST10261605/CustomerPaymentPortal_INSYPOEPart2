@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../api/api";
 import "../styles/Payment.css";
+import Navbar from "../components/Navbar";
 
 function Payment() {
   const [formData, setFormData] = useState({
@@ -174,147 +175,145 @@ function Payment() {
   };
 
   return (
-    <div className="payment-page">
-      <div className="payment-card">
-        <h2 className="payment-title">Make a Payment</h2>
+    <div className="payment-page-container">
+      {/* Navbar at the top */}
+      <Navbar />
+      
+      {/* Main payment content */}
+      <div className="payment-page">
+        <div className="payment-card">
+          <h2 className="payment-title">Make a Payment</h2>
 
-        {/* Test button - remove in production */}
-        <button 
-          type="button" 
-          onClick={fillSampleData}
-          style={{
-            marginBottom: '20px',
-            background: '#666',
-            color: 'white',
-            padding: '10px',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          Fill Sample Data
-        </button>
-
-        {message && (
-          <div className={`payment-message ${isSuccess ? "payment-success" : "payment-error"}`}>
-            <p>{message}</p>
-          </div>
-        )}
-
-        <form onSubmit={handlePayment}>
-          <div className="input-group">
-            <label htmlFor="amount">Amount *</label>
-            <input
-              id="amount"
-              name="amount"
-              type="number"
-              step="0.01"
-              min="0.01"
-              max="1000000"
-              value={formData.amount}
-              onChange={handleChange}
-              placeholder="0.00"
-              required
-              className={errors.amount ? "error" : ""}
-            />
-            {errors.amount && <span className="error-text">{errors.amount}</span>}
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="currency">Currency *</label>
-            <select
-              id="currency"
-              name="currency"
-              value={formData.currency}
-              onChange={handleChange}
-            >
-              <option value="USD">USD - US Dollar</option>
-              <option value="EUR">EUR - Euro</option>
-              <option value="GBP">GBP - British Pound</option>
-              <option value="ZAR">ZAR - South African Rand</option>
-            </select>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="provider">Payment Provider *</label>
-            <select
-              id="provider"
-              name="provider"
-              value={formData.provider}
-              onChange={handleChange}
-            >
-              <option value="SWIFT">SWIFT Transfer</option>
-              <option value="SEPA">SEPA Transfer</option>
-              <option value="FEDWIRE">Fedwire</option>
-            </select>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="recipientName">Recipient Name *</label>
-            <input
-              id="recipientName"
-              name="recipientName"
-              type="text"
-              value={formData.recipientName}
-              onChange={handleChange}
-              placeholder="John Doe"
-              required
-              className={errors.recipientName ? "error" : ""}
-            />
-            {errors.recipientName && <span className="error-text">{errors.recipientName}</span>}
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="recipientAccount">Recipient Account Number *</label>
-            <input
-              id="recipientAccount"
-              name="recipientAccount"
-              type="text"
-              value={formData.recipientAccount}
-              onChange={handleChange}
-              placeholder="1234567890"
-              required
-              className={errors.recipientAccount ? "error" : ""}
-            />
-            {errors.recipientAccount && <span className="error-text">{errors.recipientAccount}</span>}
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="swiftCode">SWIFT/BIC Code *</label>
-            <input
-              id="swiftCode"
-              name="swiftCode"
-              type="text"
-              value={formData.swiftCode}
-              onChange={handleChange}
-              placeholder="BANKUS33"
-              required
-              className={errors.swiftCode ? "error" : ""}
-              style={{ textTransform: 'uppercase' }}
-            />
-            {errors.swiftCode && <span className="error-text">{errors.swiftCode}</span>}
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="description">Description (Optional)</label>
-            <input
-              id="description"
-              name="description"
-              type="text"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Payment description"
-            />
-          </div>
-
+          {/* Test button - remove in production */}
           <button 
-            className={`payment-button ${isLoading ? "loading" : ""}`} 
-            type="submit"
-            disabled={isLoading}
+            type="button" 
+            onClick={fillSampleData}
+            className="sample-data-btn"
           >
-            {isLoading ? "Processing..." : "Pay Now"}
+            Fill Sample Data
           </button>
-        </form>
+
+          {message && (
+            <div className={`payment-message ${isSuccess ? "payment-success" : "payment-error"}`}>
+              <p>{message}</p>
+            </div>
+          )}
+
+          <form onSubmit={handlePayment}>
+            <div className="input-group">
+              <label htmlFor="amount">Amount *</label>
+              <input
+                id="amount"
+                name="amount"
+                type="number"
+                step="0.01"
+                min="0.01"
+                max="1000000"
+                value={formData.amount}
+                onChange={handleChange}
+                placeholder="0.00"
+                required
+                className={errors.amount ? "error" : ""}
+              />
+              {errors.amount && <span className="error-text">{errors.amount}</span>}
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="currency">Currency *</label>
+              <select
+                id="currency"
+                name="currency"
+                value={formData.currency}
+                onChange={handleChange}
+              >
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="ZAR">ZAR - South African Rand</option>
+              </select>
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="provider">Payment Provider *</label>
+              <select
+                id="provider"
+                name="provider"
+                value={formData.provider}
+                onChange={handleChange}
+              >
+                <option value="SWIFT">SWIFT Transfer</option>
+                <option value="SEPA">SEPA Transfer</option>
+                <option value="FEDWIRE">Fedwire</option>
+              </select>
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="recipientName">Recipient Name *</label>
+              <input
+                id="recipientName"
+                name="recipientName"
+                type="text"
+                value={formData.recipientName}
+                onChange={handleChange}
+                placeholder="John Doe"
+                required
+                className={errors.recipientName ? "error" : ""}
+              />
+              {errors.recipientName && <span className="error-text">{errors.recipientName}</span>}
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="recipientAccount">Recipient Account Number *</label>
+              <input
+                id="recipientAccount"
+                name="recipientAccount"
+                type="text"
+                value={formData.recipientAccount}
+                onChange={handleChange}
+                placeholder="1234567890"
+                required
+                className={errors.recipientAccount ? "error" : ""}
+              />
+              {errors.recipientAccount && <span className="error-text">{errors.recipientAccount}</span>}
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="swiftCode">SWIFT/BIC Code *</label>
+              <input
+                id="swiftCode"
+                name="swiftCode"
+                type="text"
+                value={formData.swiftCode}
+                onChange={handleChange}
+                placeholder="BANKUS33"
+                required
+                className={errors.swiftCode ? "error" : ""}
+                style={{ textTransform: 'uppercase' }}
+              />
+              {errors.swiftCode && <span className="error-text">{errors.swiftCode}</span>}
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="description">Description (Optional)</label>
+              <input
+                id="description"
+                name="description"
+                type="text"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Payment description"
+              />
+            </div>
+
+            <button 
+              className={`payment-button ${isLoading ? "loading" : ""}`} 
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "Pay Now"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
