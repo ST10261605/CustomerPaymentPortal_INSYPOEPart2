@@ -162,19 +162,6 @@ function Payment() {
     }
   };
 
-  // Test button to fill sample data
-  const fillSampleData = () => {
-    setFormData({
-      amount: "100.00",
-      currency: "USD",
-      provider: "SWIFT",
-      recipientAccount: "1234567890",
-      swiftCode: "BANKUS33",
-      recipientName: "John Smith",
-      description: "Invoice payment"
-    });
-  };
-
   return (
     <div className="payment-page-container">
       {/* Navbar at the top */}
@@ -184,15 +171,6 @@ function Payment() {
       <div className="payment-page">
         <div className="payment-card">
           <h2 className="payment-title">Make a Payment</h2>
-
-          {/* Test button - remove in production */}
-          <button 
-            type="button" 
-            onClick={fillSampleData}
-            className="sample-data-btn"
-          >
-            Fill Sample Data
-          </button>
 
           {message && (
             <div className="payment-message payment-error">

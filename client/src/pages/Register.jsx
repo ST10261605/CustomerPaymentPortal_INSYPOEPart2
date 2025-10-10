@@ -3,6 +3,7 @@ import "../styles/Register.css";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 import validator from "validator";
+import Navbar from "../components/Navbar";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -165,115 +166,110 @@ const Register = () => {
   };
 
   return (
-    <div className="register-container">
-      {/* Left Image */}
-      <div className="register-left">
-        <img
-          src="/register-image.jpg"
-          alt="Payment Illustration"
-          className="register-image"
-        />
-      </div>
-
-      {/* Right Side */}
-      <div className="register-right">
-        {/* Background particles */}
-        <div className="particles">
-          {particles.map((p, i) => (
-            <span
-              key={i}
-              className="particle"
-              style={{
-                width: `${p.size}px`,
-                height: `${p.size}px`,
-                left: `${p.left}%`,
-                animationDuration: `${p.duration}s`,
-                animationDelay: `${p.delay}s`,
-                "--sway": `${p.sway}px`,
-                "--opacity": Math.random() * 0.3 + 0.3,
-              }}
-            ></span>
-          ))}
+    <>
+      <Navbar />
+      <div className="register-container">
+        {/* Left Image */}
+        <div className="register-left">
+          <img
+            src="/register-image.jpg"
+            alt="Payment Illustration"
+            className="register-image"
+          />
         </div>
-
-        {/* Register Card */}
-        <div className="register-card">
-          <h2>Create an Account</h2>
-          
-          <form onSubmit={handleSubmit}>
-            {/* Full Name Input */}
-            <div className="input-group">
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Full Name"
-                value={form.fullName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-              />
-              {errors.fullName && (
-                <p className="error-text">{errors.fullName}</p>
-              )}
-            </div>
-
-            {/* ID Number Input */}
-            <div className="input-group">
-              <input
-                type="text"
-                name="idNumber"
-                placeholder="ID Number"
-                value={form.idNumber}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-              />
-              {errors.idNumber && (
-                <p className="error-text">{errors.idNumber}</p>
-              )}
-            </div>
-
-            {/* Account Number Input */}
-            <div className="input-group">
-              <input
-                type="text"
-                name="accountNumber"
-                placeholder="Account Number"
-                value={form.accountNumber}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-              />
-              {errors.accountNumber && (
-                <p className="error-text">{errors.accountNumber}</p>
-              )}
-            </div>
-
-            {/* Password Input */}
-            <div className="input-group">
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-              />
-              {errors.password && (
-                <p className="error-text">{errors.password}</p>
-              )}
-            </div>
-
-            <button type="submit">Register</button>
-          </form>
-
-          {/* General message */}
-          {message && <p className="form-message">{message}</p>}
+  
+        {/* Right Side */}
+        <div className="register-right">
+          {/* Background particles */}
+          <div className="particles">
+            {particles.map((p, i) => (
+              <span
+                key={i}
+                className="particle"
+                style={{
+                  width: `${p.size}px`,
+                  height: `${p.size}px`,
+                  left: `${p.left}%`,
+                  animationDuration: `${p.duration}s`,
+                  animationDelay: `${p.delay}s`,
+                  "--sway": `${p.sway}px`,
+                  "--opacity": Math.random() * 0.3 + 0.3,
+                }}
+              ></span>
+            ))}
+          </div>
+  
+          {/* Register Card */}
+          <div className="register-card">
+            <h2>Create an Account</h2>
+            <form onSubmit={handleSubmit}>
+              {/* Full Name Input */}
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="fullName"
+                  placeholder="Full Name"
+                  value={form.fullName}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
+                />
+                {errors.fullName && <p className="error-text">{errors.fullName}</p>}
+              </div>
+  
+              {/* ID Number Input */}
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="idNumber"
+                  placeholder="ID Number"
+                  value={form.idNumber}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
+                />
+                {errors.idNumber && <p className="error-text">{errors.idNumber}</p>}
+              </div>
+  
+              {/* Account Number Input */}
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="accountNumber"
+                  placeholder="Account Number"
+                  value={form.accountNumber}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
+                />
+                {errors.accountNumber && <p className="error-text">{errors.accountNumber}</p>}
+              </div>
+  
+              {/* Password Input */}
+              <div className="input-group">
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={form.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
+                />
+                {errors.password && <p className="error-text">{errors.password}</p>}
+              </div>
+  
+              <button type="submit">Register</button>
+            </form>
+  
+            {/* General message */}
+            {message && <p className="form-message">{message}</p>}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
+  
 };
 
 export default Register;

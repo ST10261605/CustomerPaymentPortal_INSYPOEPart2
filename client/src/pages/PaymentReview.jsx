@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api/api";
-import "../styles/PaymentReview.css"; // Make sure you have this CSS file
+import "../styles/PaymentReview.css"; 
 
 const Review = () => {
   const location = useLocation();
@@ -41,7 +41,7 @@ const Review = () => {
         return;
       }
 
-      // Try to fetch payments from your API
+      // Try to fetch payments from API
       const res = await api.get("/payments", {
         headers: {
           'Authorization': `Bearer ${token}`
