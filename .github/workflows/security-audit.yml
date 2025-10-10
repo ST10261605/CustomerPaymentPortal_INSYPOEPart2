@@ -1,0 +1,27 @@
+name: Weekly Security Audit
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday at 2 AM
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run npm audit on client
+      run: npm audit --audit-level high
+      working-directory: ./client
+      
+    - name: Run npm audit on server
+      run: npm audit --audit-level high
+      working-directory: ./server
+      
+    - name: CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        languages: javascript
