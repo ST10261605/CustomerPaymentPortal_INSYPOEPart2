@@ -80,9 +80,28 @@ function Login() {
       
       navigate("/home");
     } catch (err) {
-      setMessage("Login failed. Please check your credentials.");
+    // Handle different error types
+    if (err.response) {
+      // Server responded with error status
+      if (err.response.status === 429) {
+        // Rate limit exceeded
+        setMessage(err.response.data?.message || "Too many login attempts. Please try again in 15 minutes.");
+      } else if (err.response.status === 401) {
+        // Invalid credentials
+        setMessage("Login failed! Invalid credentials.");
+      } else {
+        // Other server errors
+        setMessage("Login failed! Please try again.");
+      }
+    } else if (err.request) {
+      // Network error (no response received)
+      setMessage("Network error. Please check your connection.");
+    } else {
+      // Other errors
+      setMessage("An unexpected error occurred.");
     }
-  };
+  }
+};
 
   return (
     <div className="login-container">

@@ -21,7 +21,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
     // --- Create new payment ---
     const payment = new Payment({
-      userId: req.user.id, // assuming JWT sets req.user.id
+      userId: req.user._id, // assuming JWT sets req.user.id
       amount,
       currency,
       provider,
@@ -30,7 +30,11 @@ router.post("/", authMiddleware, async (req, res) => {
     });
 
     await payment.save();
-    res.status(201).json({ msg: "Payment created successfully", payment });
+    res.status(201).json({
+    msg: "Payment created successfully",
+    transactionId: payment._id,
+    payment
+    });
 
   } catch (err) {
     console.error(err);
