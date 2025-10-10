@@ -53,13 +53,13 @@ The international payment system is a banking platform that enables customers to
 # User Roles
 ## Customers
 
-•	Registration
+### Registration
 
 o	Provide their Name, ID, Account Number and Password
 
 o	All information is validated against banking records
 
-•	Payment Process
+###   Payment Process
 
 o	Login with their username, account number and password
 
