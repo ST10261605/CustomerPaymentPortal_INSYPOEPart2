@@ -221,8 +221,6 @@ function Payment() {
                 onChange={handleChange}
               >
                 <option value="SWIFT">SWIFT Transfer</option>
-                <option value="SEPA">SEPA Transfer</option>
-                <option value="FEDWIRE">Fedwire</option>
               </select>
             </div>
 
