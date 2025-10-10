@@ -1,8 +1,6 @@
 import express from "express";
 import Payment from "../models/Payment.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-import { verify } from "crypto";
-
 const router = express.Router();
 
 //SWIFT/BIC Code validation

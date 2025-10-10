@@ -1,117 +1,319 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api/api";
 import "../styles/Payment.css";
 
 function Payment() {
-  const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("USD");
-  const [provider, setProvider] = useState("SWIFT");
-  const [recipientAccount, setRecipientAccount] = useState("");
-  const [swiftCode, setSwiftCode] = useState("");
+  const [formData, setFormData] = useState({
+    amount: "",
+    currency: "USD",
+    provider: "SWIFT",
+    recipientAccount: "",
+    swiftCode: "",
+    recipientName: "",
+    description: ""
+  });
+  
+  const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Get token from localStorage
+  const getAuthToken = () => {
+    return localStorage.getItem("accessToken");
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    const amountNum = parseFloat(formData.amount);
+    const accountRegex = /^\d{6,20}$/;
+    const swiftRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
+    const nameRegex = /^[a-zA-Z\s]{2,50}$/;
+
+    // Amount validation
+    if (!formData.amount.trim()) {
+      newErrors.amount = "Amount is required.";
+    } else if (isNaN(amountNum) || amountNum <= 0) {
+      newErrors.amount = "Please enter a valid amount greater than 0.";
+    } else if (amountNum > 1000000) {
+      newErrors.amount = "Amount cannot exceed 1,000,000.";
+    }
+
+    // Recipient account validation
+    if (!formData.recipientAccount.trim()) {
+      newErrors.recipientAccount = "Recipient account number is required.";
+    } else if (!accountRegex.test(formData.recipientAccount)) {
+      newErrors.recipientAccount = "Account number must be 6-20 digits.";
+    }
+
+    // SWIFT code validation
+    if (!formData.swiftCode.trim()) {
+      newErrors.swiftCode = "SWIFT code is required.";
+    } else if (!swiftRegex.test(formData.swiftCode.toUpperCase())) {
+      newErrors.swiftCode = "Please enter a valid SWIFT code (e.g., BANKUS33).";
+    }
+
+    // Recipient name validation
+    if (!formData.recipientName.trim()) {
+      newErrors.recipientName = "Recipient name is required.";
+    } else if (!nameRegex.test(formData.recipientName)) {
+      newErrors.recipientName = "Please enter a valid name (letters and spaces only).";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handlePayment = async (e) => {
     e.preventDefault();
+    setMessage("");
+    setIsSuccess(false);
 
-    const amountNum = parseFloat(amount);
-    const accountRegex = /^\d{6,20}$/;
-    const swiftRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
-
-    if (isNaN(amountNum) || amountNum <= 0) {
-      setMessage("Please enter a valid amount.");
-      setIsSuccess(false);
+    if (!validateForm()) {
+      setMessage("Please fix the errors before submitting.");
       return;
     }
 
-    if (!accountRegex.test(recipientAccount)) {
-      setMessage("Recipient account number is invalid.");
-      setIsSuccess(false);
-      return;
-    }
-
-    if (!swiftRegex.test(swiftCode)) {
-      setMessage("SWIFT code is invalid.");
-      setIsSuccess(false);
-      return;
-    }
+    setIsLoading(true);
 
     try {
-      const res = await api.post("/payment", {
-        amount: amountNum,
-        currency,
-        provider,
-        recipientAccount,
-        swiftCode,
+      const paymentData = {
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        provider: formData.provider,
+        recipientAccount: formData.recipientAccount,
+        swiftCode: formData.swiftCode.toUpperCase(),
+        recipientName: formData.recipientName.trim(),
+        description: formData.description.trim() || `Payment to ${formData.recipientName.trim()}`
+      };
+
+      console.log("Sending payment data:", paymentData);
+
+      // Get authentication token
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error("Please log in to make a payment");
+      }
+
+      const res = await api.post("/payment", paymentData, {
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
 
-      setMessage(`Payment successful! Transaction ID: ${res.data.transactionId}`);
+      console.log("Payment response:", res.data);
+
+      setMessage(`Payment successful! Transaction ID: ${res.data.transactionId || res.data.payment?.id}`);
       setIsSuccess(true);
 
-      setAmount("");
-      setRecipientAccount("");
-      setSwiftCode("");
+      // Reset form on success
+      setFormData({
+        amount: "",
+        currency: "USD",
+        provider: "SWIFT",
+        recipientAccount: "",
+        swiftCode: "",
+        recipientName: "",
+        description: ""
+      });
+
     } catch (err) {
-      setMessage(err.response?.data?.message || "Payment failed. Please try again.");
+      console.error("Payment error:", err);
+      
+      let errorMessage = "Payment failed. Please try again.";
+      
+      if (err.response) {
+        errorMessage = err.response.data?.msg || 
+                      err.response.data?.message || 
+                      err.response.data?.error ||
+                      `Server error: ${err.response.status}`;
+      } else if (err.request) {
+        errorMessage = "No response from server. Please check your connection.";
+      } else if (err.code === 'ECONNABORTED') {
+        errorMessage = "Request timeout. Please try again.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setMessage(errorMessage);
       setIsSuccess(false);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // Test button to fill sample data
+  const fillSampleData = () => {
+    setFormData({
+      amount: "100.00",
+      currency: "USD",
+      provider: "SWIFT",
+      recipientAccount: "1234567890",
+      swiftCode: "BANKUS33",
+      recipientName: "John Smith",
+      description: "Invoice payment"
+    });
   };
 
   return (
     <div className="payment-page">
       <div className="payment-card">
-        <h2 className="payment-title">Make a payment</h2>
+        <h2 className="payment-title">Make a Payment</h2>
+
+        {/* Test button - remove in production */}
+        <button 
+          type="button" 
+          onClick={fillSampleData}
+          style={{
+            marginBottom: '20px',
+            background: '#666',
+            color: 'white',
+            padding: '10px',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          Fill Sample Data
+        </button>
 
         {message && (
-          <div className={isSuccess ? "payment-success" : "payment-errors"}>
+          <div className={`payment-message ${isSuccess ? "payment-success" : "payment-error"}`}>
             <p>{message}</p>
           </div>
         )}
 
         <form onSubmit={handlePayment}>
-          <label>Amount</label>
-          <input
-            type="number"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            required
-          />
+          <div className="input-group">
+            <label htmlFor="amount">Amount *</label>
+            <input
+              id="amount"
+              name="amount"
+              type="number"
+              step="0.01"
+              min="0.01"
+              max="1000000"
+              value={formData.amount}
+              onChange={handleChange}
+              placeholder="0.00"
+              required
+              className={errors.amount ? "error" : ""}
+            />
+            {errors.amount && <span className="error-text">{errors.amount}</span>}
+          </div>
 
-          <label>Currency</label>
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-            <option value="ZAR">ZAR</option>
-          </select>
+          <div className="input-group">
+            <label htmlFor="currency">Currency *</label>
+            <select
+              id="currency"
+              name="currency"
+              value={formData.currency}
+              onChange={handleChange}
+            >
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+              <option value="ZAR">ZAR - South African Rand</option>
+            </select>
+          </div>
 
-          <label>Payment Provider</label>
-          <select value={provider} onChange={(e) => setProvider(e.target.value)}>
-            <option value="SWIFT">SWIFT</option>
-            {/* Add more providers here */}
-          </select>
+          <div className="input-group">
+            <label htmlFor="provider">Payment Provider *</label>
+            <select
+              id="provider"
+              name="provider"
+              value={formData.provider}
+              onChange={handleChange}
+            >
+              <option value="SWIFT">SWIFT Transfer</option>
+              <option value="SEPA">SEPA Transfer</option>
+              <option value="FEDWIRE">Fedwire</option>
+            </select>
+          </div>
 
-          <label>Recipient Account Number</label>
-          <input
-            type="text"
-            value={recipientAccount}
-            onChange={(e) => setRecipientAccount(e.target.value)}
-            placeholder="1234567890"
-            required
-          />
+          <div className="input-group">
+            <label htmlFor="recipientName">Recipient Name *</label>
+            <input
+              id="recipientName"
+              name="recipientName"
+              type="text"
+              value={formData.recipientName}
+              onChange={handleChange}
+              placeholder="John Doe"
+              required
+              className={errors.recipientName ? "error" : ""}
+            />
+            {errors.recipientName && <span className="error-text">{errors.recipientName}</span>}
+          </div>
 
-          <label>SWIFT Code</label>
-          <input
-            type="text"
-            value={swiftCode}
-            onChange={(e) => setSwiftCode(e.target.value)}
-            placeholder="BANKUS33"
-            required
-          />
+          <div className="input-group">
+            <label htmlFor="recipientAccount">Recipient Account Number *</label>
+            <input
+              id="recipientAccount"
+              name="recipientAccount"
+              type="text"
+              value={formData.recipientAccount}
+              onChange={handleChange}
+              placeholder="1234567890"
+              required
+              className={errors.recipientAccount ? "error" : ""}
+            />
+            {errors.recipientAccount && <span className="error-text">{errors.recipientAccount}</span>}
+          </div>
 
-          <button className="payment-button" type="submit">Pay Now</button>
+          <div className="input-group">
+            <label htmlFor="swiftCode">SWIFT/BIC Code *</label>
+            <input
+              id="swiftCode"
+              name="swiftCode"
+              type="text"
+              value={formData.swiftCode}
+              onChange={handleChange}
+              placeholder="BANKUS33"
+              required
+              className={errors.swiftCode ? "error" : ""}
+              style={{ textTransform: 'uppercase' }}
+            />
+            {errors.swiftCode && <span className="error-text">{errors.swiftCode}</span>}
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="description">Description (Optional)</label>
+            <input
+              id="description"
+              name="description"
+              type="text"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Payment description"
+            />
+          </div>
+
+          <button 
+            className={`payment-button ${isLoading ? "loading" : ""}`} 
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? "Processing..." : "Pay Now"}
+          </button>
         </form>
       </div>
     </div>

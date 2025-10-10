@@ -125,6 +125,30 @@
     color: #e7f2ef;
     font-size: 0.9rem;
   }
+  .input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.2rem;
+}
+
+.error-text {
+  color: #ff4d4f;
+  font-size: 0.9rem;
+  margin-top: 4px;
+  margin-left: 4px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
   
   /* PARTICLES */
   .particles {

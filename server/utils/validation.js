@@ -1,4 +1,3 @@
-// server/utils/validation.js
 import validator from "validator";
 
 export const validateRegistration = (userData) => {
@@ -32,6 +31,23 @@ export const validateRegistration = (userData) => {
     })
   ) {
     errors.push("Password must be at least 8 chars with uppercase, lowercase, number, and symbol.");
+  }
+
+  return errors;
+};
+
+export const validateLogin = (loginData) => {
+  const { accountNumber, password } = loginData;
+  const errors = [];
+
+  if (!/^\d{8,12}$/.test(accountNumber)) {
+    errors.push("Account number must be 8–12 digits.");
+  }
+
+  if (validator.isEmpty(password)) {
+    errors.push("Password cannot be empty.");
+  } else if (password.length < 8) {
+    errors.push("Password must be at least 8 characters long.");
   }
 
   return errors;
