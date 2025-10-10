@@ -1,130 +1,211 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import "../styles/PaymentReview.css";
+import Navbar from "../components/Navbar";
+import api from "../api/api";
+import "../styles/PaymentReview.css"; // Make sure you have this CSS file
 
-function PaymentReview() {
+const Review = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Get payment data from navigation state
-  const paymentData = location.state?.paymentData;
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(false); // Start as false since we have local data
+  const [error, setError] = useState("");
 
-  // If no payment data, redirect back to payment page
-  if (!paymentData) {
-    navigate("/payment");
-    return null;
-  }
+  // Get the recent payment data from navigation state or localStorage
+  const recentPayment = location.state?.paymentData || 
+                       JSON.parse(localStorage.getItem("lastPayment")) || 
+                       null;
 
-  const handleConfirmPayment = async () => {
+  // Get token from localStorage
+  const getAuthToken = () => {
+    return localStorage.getItem("accessToken");
+  };
+
+  useEffect(() => {
+    // Only try to fetch payments if we have a token
+    const token = getAuthToken();
+    if (token) {
+      fetchPayments();
+    } else {
+      setLoading(false);
+      setError("Please log in to view your full payment history");
+    }
+  }, []);
+
+  const fetchPayments = async () => {
+    setLoading(true);
     try {
-      // Get authentication token
-      const token = localStorage.getItem("accessToken");
+      const token = getAuthToken();
       if (!token) {
-        alert("Please log in to make a payment");
-        navigate("/login");
+        setError("Please log in to view payment history");
         return;
       }
 
-      // Submit the payment
-      const response = await fetch("http://localhost:5000/api/payment", {
-        method: "POST",
+      // Try to fetch payments from your API
+      const res = await api.get("/payments", {
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(paymentData)
+          'Authorization': `Bearer ${token}`
+        }
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        // Navigate to success page or show success message
-        navigate("/payment-success", { 
-          state: { 
-            transactionId: result.transactionId || result.payment?.id,
-            paymentDetails: paymentData
-          }
-        });
-      } else {
-        const error = await response.json();
-        alert(`Payment failed: ${error.msg || error.message || "Unknown error"}`);
+      setPayments(res.data.payments || []);
+    } catch (err) {
+      console.error("Error fetching payments:", err);
+      // Don't show error if endpoint doesn't exist (404) or no payments (empty array)
+      if (err.response?.status !== 404 && err.response?.status !== 401) {
+        setError("Note: Could not load full payment history from server");
       }
-    } catch (error) {
-      console.error("Payment confirmation error:", error);
-      alert("Payment failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEditPayment = () => {
-    // Navigate back to payment page with the existing data
-    navigate("/payment", { state: { formData: paymentData } });
+  const handleMakeNewPayment = () => {
+    navigate("/payment");
   };
 
+  const formatDate = (dateString) => {
+    try {
+      if (!dateString) return "Recent";
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return dateString || "Recent";
+    }
+  };
+
+  // Combine all payments to display
+  const allPayments = recentPayment ? [recentPayment, ...payments] : payments;
+
   return (
-    <div className="payment-review-page">
-      <div className="payment-review-card">
-        <h2 className="review-title">Review Your Payment</h2>
-        <p className="review-subtitle">Please confirm your payment details before proceeding</p>
-
-        <div className="payment-details">
-          <div className="detail-row">
-            <span className="detail-label">Amount:</span>
-            <span className="detail-value">
-              {paymentData.currency} {parseFloat(paymentData.amount).toFixed(2)}
-            </span>
-          </div>
-
-          <div className="detail-row">
-            <span className="detail-label">Payment Provider:</span>
-            <span className="detail-value">{paymentData.provider}</span>
-          </div>
-
-          <div className="detail-row">
-            <span className="detail-label">Recipient Name:</span>
-            <span className="detail-value">{paymentData.recipientName}</span>
-          </div>
-
-          <div className="detail-row">
-            <span className="detail-label">Recipient Account:</span>
-            <span className="detail-value">{paymentData.recipientAccount}</span>
-          </div>
-
-          <div className="detail-row">
-            <span className="detail-label">SWIFT/BIC Code:</span>
-            <span className="detail-value">{paymentData.swiftCode}</span>
-          </div>
-
-          {paymentData.description && (
-            <div className="detail-row">
-              <span className="detail-label">Description:</span>
-              <span className="detail-value">{paymentData.description}</span>
-            </div>
-          )}
-
-          <div className="detail-row">
-            <span className="detail-label">Date:</span>
-            <span className="detail-value">{new Date().toLocaleDateString()}</span>
-          </div>
+    <div className="review-container">
+      <Navbar />
+      
+      <div className="review-content">
+        <div className="review-header">
+          <h1 className="review-title">Payment Review</h1>
+          <p className="review-subtitle">View and manage your payment history</p>
         </div>
 
-        <div className="review-actions">
+        {recentPayment && (
+          <div className="recent-payment-banner">
+            <div className="success-icon">✓</div>
+            <div className="banner-content">
+              <h3>Payment Successful!</h3>
+              <p>Your payment of {recentPayment.amount} {recentPayment.currency} to {recentPayment.recipientName} was completed successfully.</p>
+              {recentPayment.transactionId && (
+                <p><strong>Transaction ID:</strong> {recentPayment.transactionId}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {error && !error.includes("Note:") && (
+          <div className="error-message">
+            <p>{error}</p>
+            <button onClick={fetchPayments} className="retry-button">
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {error && error.includes("Note:") && (
+          <div className="info-message">
+            <p>{error}</p>
+          </div>
+        )}
+
+        <div className="payments-section">
+          <h2 className="section-title">
+            {recentPayment ? "Recent Payment" : "Your Payments"}
+          </h2>
+          
+          {loading ? (
+            <div className="loading-spinner">Loading payment history...</div>
+          ) : allPayments.length === 0 ? (
+            <div className="no-payments">
+              <p>No payments found.</p>
+              <button 
+                className="cta-button primary"
+                onClick={handleMakeNewPayment}
+              >
+                Make Your First Payment
+              </button>
+            </div>
+          ) : (
+            <div className="payments-list">
+              {allPayments.map((payment, index) => (
+                <div 
+                  key={payment.transactionId || payment.id || `payment-${index}`}
+                  className={`payment-card ${index === 0 && recentPayment ? 'recent' : ''}`}
+                >
+                  <div className="payment-card-header">
+                    <h3>Payment to {payment.recipientName}</h3>
+                    <span className={`status ${index === 0 && recentPayment ? 'just-completed' : 'completed'}`}>
+                      {index === 0 && recentPayment ? 'Just Completed' : 'Completed'}
+                    </span>
+                  </div>
+                  
+                  <div className="payment-card-details">
+                    <div className="detail-row">
+                      <span>Amount:</span>
+                      <span>{payment.amount} {payment.currency}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span>Recipient Name:</span>
+                      <span>{payment.recipientName}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span>Recipient Account:</span>
+                      <span>{payment.recipientAccount}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span>SWIFT Code:</span>
+                      <span>{payment.swiftCode}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span>Provider:</span>
+                      <span>{payment.provider}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span>Date:</span>
+                      <span>{formatDate(payment.timestamp || payment.createdAt)}</span>
+                    </div>
+                    {payment.transactionId && (
+                      <div className="detail-row">
+                        <span>Transaction ID:</span>
+                        <span className="transaction-id">{payment.transactionId}</span>
+                      </div>
+                    )}
+                    {payment.description && (
+                      <div className="detail-row">
+                        <span>Description:</span>
+                        <span>{payment.description}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="action-buttons">
           <button 
-            type="button" 
-            className="edit-button"
-            onClick={handleEditPayment}
+            className="cta-button primary"
+            onClick={handleMakeNewPayment}
           >
-            Edit Payment
-          </button>
-          <button 
-            type="button" 
-            className="confirm-button"
-            onClick={handleConfirmPayment}
-          >
-            Confirm Payment
+            Make New Payment
           </button>
         </div>
       </div>
     </div>
   );
-}
+};
 
-export default PaymentReview;
+export default Review;

@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import api from "../api/api";
 import "../styles/Payment.css";
 import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
 
 function Payment() {
+  const navigate = useNavigate(); 
   const [formData, setFormData] = useState({
     amount: "",
     currency: "USD",
@@ -16,7 +18,6 @@ function Payment() {
   
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Get token from localStorage
@@ -84,7 +85,6 @@ function Payment() {
   const handlePayment = async (e) => {
     e.preventDefault();
     setMessage("");
-    setIsSuccess(false);
 
     if (!validateForm()) {
       setMessage("Please fix the errors before submitting.");
@@ -122,18 +122,20 @@ function Payment() {
 
       console.log("Payment response:", res.data);
 
-      setMessage(`Payment successful! Transaction ID: ${res.data.transactionId || res.data.payment?.id}`);
-      setIsSuccess(true);
+      // Prepare data for the payment details page
+      const paymentReview = {
+        ...paymentData,
+        transactionId: res.data.transactionId || res.data.payment?.id || `TXN-${Date.now()}`,
+        timestamp: new Date().toLocaleString(),
+        status: "Completed"
+      };
 
-      // Reset form on success
-      setFormData({
-        amount: "",
-        currency: "USD",
-        provider: "SWIFT",
-        recipientAccount: "",
-        swiftCode: "",
-        recipientName: "",
-        description: ""
+      // Store in localStorage as backup
+      localStorage.setItem("lastPayment", JSON.stringify(paymentReview));
+
+      // Redirect to payment details page with data
+      navigate("/review", { 
+        state: { paymentData: paymentReview } 
       });
 
     } catch (err) {
@@ -155,7 +157,6 @@ function Payment() {
       }
       
       setMessage(errorMessage);
-      setIsSuccess(false);
     } finally {
       setIsLoading(false);
     }
@@ -194,7 +195,7 @@ function Payment() {
           </button>
 
           {message && (
-            <div className={`payment-message ${isSuccess ? "payment-success" : "payment-error"}`}>
+            <div className="payment-message payment-error">
               <p>{message}</p>
             </div>
           )}

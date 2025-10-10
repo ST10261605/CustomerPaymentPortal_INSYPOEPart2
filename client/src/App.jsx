@@ -8,6 +8,8 @@ import Register from "./pages/Register";
 import Payment from "./pages/Payment";
 import SplashPage from "./pages/SplashPage";
 import Home from "./pages/Home";
+import Review from './pages/PaymentReview'; 
+
 
 
 function App() {
@@ -19,6 +21,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/payment" element={<Payment />} />
+        <Route path="/review" element={<Review />} /> 
         <Route path="/home" element={<Home/>} />
       </Routes>
     </Router>
