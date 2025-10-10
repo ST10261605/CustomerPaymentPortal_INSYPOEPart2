@@ -4,12 +4,14 @@ import dotenv from "dotenv";
 import app from "./app.js";
 import express from "express";
 import authRoutes from "./routes/authRoutes.js"; 
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 dotenv.config();
 
 app.use(express.json());
 
 app.use("/api", authRoutes);
+app.use("/api/payment", paymentRoutes)
 
 const PORT = process.env.PORT || 5000;
 
