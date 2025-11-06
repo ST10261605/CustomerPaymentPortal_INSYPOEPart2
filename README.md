@@ -11,6 +11,8 @@ The international payment system is a banking platform that enables customers to
 
 •	Backend API: a secure REST API which handles business logic and data persistence
 
+•	CI/CD Pipeline: the GitHub repository with integrated CircleCI for automated testing and security scanning
+
 
 # Security Features
 ## Authentication and Authorisation
@@ -21,6 +23,7 @@ The international payment system is a banking platform that enables customers to
 
 •	Session Management: contains secure timeout policies
 
+•	Pre-registered users: employee or staff have no public registration process
 
 ## Input Validation
 
@@ -48,6 +51,43 @@ The international payment system is a banking platform that enables customers to
 
 •	Session Jacking prevention: using secure cookie flags and CSRF tokens
 
+•	SQL Injection Attacks: preparing statements and ORM usage
+
+•	Cross-site Request Forgery (CSRF): having implemented anti-CSRF tokens
+
+
+# Development and Deployment Pipeline
+## CI/CD with CircleCI
+
+•	Provided automated builds on every commit
+
+•	SonarQube integration provides code quality analysis
+
+•	There is security scanning for any vulnerabilities
+
+
+## SonarQube Integration
+
+•	Code Quality Analysis: providing continuous monitoring of code smells and technical issues
+
+• Security Hotspots: provides identification and tracking of security vulnerabilities
+
+• Quality Gates: provides automated quality checks before deployment
+
+• Coverage Reports: test coverage analysis and reporting
+
+• Automated Scans: the scans are triggered on every pull request and main branch commit
+
+• Quality metrics include maintainability of rating, reliability of rating, security rating and coverage percentage
+
+
+# User Management
+
+• No Public Registration (for employees): the employees are registered by admins
+
+• Account Validation: all user accounts are validated against banking records
+
+• Role-based Access: there's a strict separation between customer and employee privileges
 
 
 # User Roles
@@ -110,6 +150,8 @@ o	Finalise with the "Pay Now" option
 
 •	Audit Logging:  tracks all transaction activities
 
+•  User Management API: there are internal endpoints for user creation only
+
 
 # Database Security
 
@@ -132,7 +174,7 @@ We have the following:
 
 •	Data Protection: follows local data protection laws
 
-
+•  CI/CD Security: secure pipeline configuration and management
 
 
 # Development Requirements
@@ -147,6 +189,11 @@ We have the following:
 •	Secure SSL Certificate
 
 •	Database System
+
+• SonarQube server access
+
+• CircleCI account
+
 
 # Security Checklist
 
@@ -170,6 +217,12 @@ Ensure the following is adhered to:
 
 •	Have regular security dependency updates
 
+• No user registration endpoints are publicly exposed
+
+• SonarQube quality gates are passing
+
+• CircleCI pipeline security is configured
+
 
 # First Time Setup - SSL Certificate
 
@@ -191,3 +244,5 @@ When you first run the project, browsers will show security warnings because we 
 •	Firewall Rules: restrict access to necessary ports only
 
 •	Monitoring: implement security monitoring and alerting
+
+• Pipeline Security: secure CircleCI context and environment variables
