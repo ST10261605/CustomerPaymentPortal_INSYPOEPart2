@@ -81,7 +81,67 @@ export const loginUser = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    res.json({ accessToken, user: { id: user._id, fullName: user.fullName } });
+    res.json({ accessToken, user: { id: user._id, fullName: user.fullName, role: user.role } });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// register Admin (temporary setup)
+export const registerAdmin = async (req, res) => {
+  const { fullName, idNumber, accountNumber, password } = req.body;
+
+  try {
+    const existingAdmin = await User.findOne({ role: "Admin" });
+    if (existingAdmin) {
+      return res.status(400).json({ error: "Admin already exists" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const admin = new User({
+      fullName,
+      idNumber,
+      accountNumber,
+      passwordHash,
+      role: "Admin"
+    });
+
+    await admin.save();
+    res.status(201).json({ message: "Admin registered successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Register Employee (Admin only)
+export const registerEmployee = async (req, res) => {
+  const { fullName, idNumber, accountNumber, password } = req.body;
+  const requester = req.user; // comes from JWT middleware
+
+  try {
+    const admin = await User.findById(requester.userId);
+    if (!admin || admin.role !== "Admin") {
+      return res.status(403).json({ error: "Access denied. Admins only." });
+    }
+
+    const existingUser = await User.findOne({ accountNumber });
+    if (existingUser) return res.status(400).json({ error: "Employee already exists" });
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const employee = new User({
+      fullName,
+      idNumber,
+      accountNumber,
+      passwordHash,
+      role: "Employee"
+    });
+
+    await employee.save();
+    res.status(201).json({ message: "Employee registered successfully!" });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }

@@ -51,8 +51,8 @@ function Login() {
         password.trim() === ""
           ? "Password cannot be empty."
           : password.length < 8
-          ? "Password must be at least 8 characters long."
-          : "",
+            ? "Password must be at least 8 characters long."
+            : "",
     };
     setErrors(newErrors);
 
@@ -64,11 +64,24 @@ function Login() {
     try {
       const res = await api.post("/auth/login", { accountNumber, password });
       setMessage("Login successful!");
+
       localStorage.setItem("accessToken", res.data.accessToken);
+
+
       if (res.data && res.data.user) {
+        const { role } = res.data.user;
         localStorage.setItem("user", JSON.stringify(res.data.user));
+
+        // redirect based on role
+        if (role === "Admin") {
+          navigate("/admin/home");
+        } else if (role === "Employee") {
+          navigate("/employee/home");
+        } else {
+          navigate("/home");
+        }
       }
-      navigate("/home");
+
     } catch (err) {
       if (err.response) {
         if (err.response.status === 429) {

@@ -9,8 +9,9 @@ import Payment from "./pages/Payment";
 import SplashPage from "./pages/SplashPage";
 import Home from "./pages/Home";
 import Review from './pages/PaymentReview'; 
-
-
+import RegisterEmployee from "./pages/RegisterEmployee";
+import EmployeeHome from "./pages/EmployeeHome";
+import AdminHome from "./pages/AdminHome";
 
 function App() {
   return (
@@ -23,6 +24,9 @@ function App() {
         <Route path="/payment" element={<Payment />} />
         <Route path="/review" element={<Review />} /> 
         <Route path="/home" element={<Home/>} />
+        <Route path="/admin/register-employee" element={<RegisterEmployee />} />
+        <Route path="/employee/home" element={<EmployeeHome />} />
+        <Route path="/admin/home" element={<AdminHome/>}/>
       </Routes>
     </Router>
   );
