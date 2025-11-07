@@ -1,8 +1,22 @@
 {
   "dependencies": {
     "axios": "^1.12.2",
+    "bcryptjs": "^3.0.2",
     "bootstrap": "^5.3.8",
+    "chai": "^6.2.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express-brute": "^1.0.1",
+    "express-brute-mongo": "^1.0.0",
+    "express-mongo-sanitize": "^2.2.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "mocha": "^11.7.5",
+    "mongoose": "^8.19.2",
+    "rate-limiter-flexible": "^8.1.0",
     "react-icons": "^5.5.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "uuid": "^13.0.0",
+    "xss": "^1.0.15"
   }
 }

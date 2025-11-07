@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Register.css";
-import api from "../api/api";
+import api, { getCsrfToken } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import validator from "validator";
 import Navbar from "../components/Navbar";
@@ -24,8 +24,28 @@ const Register = () => {
 
   const [message, setMessage] = useState("");
   const [particles, setParticles] = useState([]);
+  const [csrfReady, setCsrfReady] = useState(false); // Add this state
+  const [isLoading, setIsLoading] = useState(false);
+
+
 
   useEffect(() => {
+     // Initialize CSRF token when component mounts
+    const initializeCsrf = async () => {
+      try {
+        setIsLoading(true);
+        await getCsrfToken();
+        setCsrfReady(true);
+        console.log('✅ CSRF ready for registration');
+      } catch (error) {
+        console.error('Failed to initialize CSRF token:', error);
+        setMessage("Security setup failed. Please refresh the page.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initializeCsrf();
+
     // Generate smooth floating particles
     const particleArray = Array.from({ length: 25 }, () => ({
       size: Math.random() * 8 + 4,
@@ -104,6 +124,12 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
+    
+    // Check if CSRF is ready
+    if (!csrfReady) {
+      setMessage("Security token not ready. Please wait...");
+      return;
+    }
 
     const newErrors = {
       fullName: !form.fullName.trim() 
@@ -154,14 +180,24 @@ const Register = () => {
       }, 2000);
     } catch (error) {
       if (error.response) {
-        setMessage(
-          "Registration failed: " +
-            (error.response.data.errors?.join(", ") ||
-              error.response.data.error)
-        );
+        const errorMsg = error.response.data.errors?.join(", ") || error.response.data.error;
+        
+        if (errorMsg.includes('CSRF') || error.response.status === 403) {
+          // CSRF error - refresh token and show message
+          setCsrfReady(false);
+          await getCsrfToken();
+          setCsrfReady(true);
+          setMessage("Security token expired. Please try registering again.");
+        } else {
+          setMessage("Registration failed: " + errorMsg);
+        }
+      } else if (error.request) {
+        setMessage("Network error. Please check your connection.");
       } else {
         setMessage("Registration failed. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -176,6 +212,12 @@ const Register = () => {
             alt="Payment Illustration"
             className="register-image"
           />
+          {!csrfReady && (
+          <div className="loading-overlay">
+            <p>Initializing security...</p>
+          </div>
+        )}
+        
         </div>
   
         {/* Right Side */}

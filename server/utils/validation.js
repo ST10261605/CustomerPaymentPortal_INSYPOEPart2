@@ -1,38 +1,32 @@
 import validator from "validator";
 
+// utils/validation.js
 export const validateRegistration = (userData) => {
   const { fullName, idNumber, accountNumber, password } = userData;
-
   const errors = [];
 
-  // Full name (letters and spaces only)
-  if (!/^[a-zA-Z\s]+$/.test(fullName)) {
-    errors.push("Full name may only contain letters and spaces.");
+  // STRICT full name validation - ONLY letters and spaces
+  if (!fullName || fullName.trim() === '') {
+    errors.push("Full name is required.");
+  } else if (!/^[a-zA-Z\s]{2,50}$/.test(fullName)) {
+    errors.push("Full name may only contain letters and spaces (2-50 characters). No numbers, symbols, or HTML allowed.");
   }
 
-  // South African ID number format (13 digits)
-  if (!/^\d{13}$/.test(idNumber)) {
-    errors.push("Invalid ID number format.");
+  // ID number validation
+  if (!idNumber || !/^\d{13}$/.test(idNumber)) {
+    errors.push("ID number must be exactly 13 digits.");
   }
 
-  // Account number (8–12 digits)
-  if (!/^\d{8,12}$/.test(accountNumber)) {
-    errors.push("Invalid account number format.");
+  // Account number validation
+  if (!accountNumber || !/^\d{8,12}$/.test(accountNumber)) {
+    errors.push("Account number must be 8-12 digits.");
   }
 
-  // Password strength
-  if (
-    !validator.isStrongPassword(password, {
-      minLength: 8,
-      minLowercase: 1,
-      minUppercase: 1,
-      minNumbers: 1,
-      minSymbols: 1,
-    })
-  ) {
-    errors.push("Password must be at least 8 chars with uppercase, lowercase, number, and symbol.");
-  }
+  // Password validation
+  const passwordErrors = validatePasswordStrength(password);
+  errors.push(...passwordErrors);
 
+  console.log('🔍 VALIDATION: Errors found:', errors);
   return errors;
 };
 
@@ -50,5 +44,38 @@ export const validateLogin = (loginData) => {
     errors.push("Password must be at least 8 characters long.");
   }
 
+  return errors;
+};
+
+export const validatePasswordStrength = (password) => {
+  const errors = [];
+  
+  // Default to requiring all strength features if not specified in env
+  const requireUppercase = process.env.PASSWORD_REQUIRE_UPPERCASE !== 'false';
+  const requireLowercase = process.env.PASSWORD_REQUIRE_LOWERCASE !== 'false'; 
+  const requireNumbers = process.env.PASSWORD_REQUIRE_NUMBERS !== 'false';
+  const requireSymbols = process.env.PASSWORD_REQUIRE_SYMBOLS !== 'false';
+  const minLength = parseInt(process.env.PASSWORD_MIN_LENGTH) || 8;
+  
+  if (password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters long`);
+  }
+  
+  if (requireUppercase && !/(?=.*[A-Z])/.test(password)) {
+    errors.push("Password must contain at least one uppercase letter");
+  }
+  
+  if (requireLowercase && !/(?=.*[a-z])/.test(password)) {
+    errors.push("Password must contain at least one lowercase letter");
+  }
+  
+  if (requireNumbers && !/(?=.*\d)/.test(password)) {
+    errors.push("Password must contain at least one number");
+  }
+  
+  if (requireSymbols && !/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(password)) {
+    errors.push("Password must contain at least one special character");
+  }
+  
   return errors;
 };

@@ -30,3 +30,13 @@ export const authMiddleware = async (req, res, next) => {
     res.status(401).json({ error: "Token is not valid" });
   }
 };
+// Role-based authorization
+export const authorizeRole = (role) => {
+  return (req, res, next) => {
+    if (!req.user || req.user.role !== role && req.user.role !== "admin") {
+      return res.status(403).json({ msg: "Access denied: insufficient role" });
+    }
+    next();
+  };
+};
+
