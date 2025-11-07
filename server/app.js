@@ -57,12 +57,13 @@ const csrfErrorHandler = (err, req, res, next) => {
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || ['https://localhost:3000', 'https://localhost:5173'],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // ← ADDED PATCH
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], 
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"]
 }));
 
 //using transaction routes
 app.use("/api", transactionRoutes);
+app.use("/api", paymentRoutes);
 
 app.use((req, res, next) => {
   if (res.headersSent) {
