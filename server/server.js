@@ -10,6 +10,7 @@ dotenv.config();
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
+const HTTP_REDIRECT_PORT = 80; 
 
 // SSL configuration 
 const options = {
@@ -26,9 +27,10 @@ httpApp.use((req, res) => {
 });
 
 // Start HTTP server on port 80
+// Start HTTP server on port 80
 const httpServer = http.createServer(httpApp);
 
-httpServer.listen(80, 'localhost', () => {
+httpServer.listen(8080, 'localhost', () => {
   console.log('HTTP redirect server running on http://localhost:80');
 });
 
