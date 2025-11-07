@@ -11,7 +11,7 @@ import {
 const router = express.Router();
 
 // Auth routes for employees
-router.post("/register", registerEmployee); // optional
+router.post("/register", registerEmployee); 
 router.post("/login", loginEmployee); 
 
 //Employee protected routes

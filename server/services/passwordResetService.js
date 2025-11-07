@@ -2,7 +2,6 @@ import crypto from 'crypto';
 import User from '../models/User.js';
 import { logSecurityEvent } from './securityService.js';
 
-// In-memory store for reset tokens (use Redis in production)
 const resetTokens = new Map();
 
 export const generateResetToken = () => {
@@ -19,7 +18,6 @@ export const requestPasswordReset = async (emailOrAccountNumber) => {
     });
     
     if (!user) {
-      // Don't reveal whether user exists
       return { success: true };
     }
     
@@ -43,13 +41,9 @@ export const requestPasswordReset = async (emailOrAccountNumber) => {
       token,
       expiresAt
     });
-    
-    // Simulate email sending
-    console.log(`Password reset link for ${user.accountNumber}: ${resetLink}`);
-    
+        
     return { success: true };
   } catch (error) {
-    console.error('Password reset request error:', error);
     return { success: false, error: 'Failed to process reset request' };
   }
 };
@@ -114,7 +108,6 @@ export const resetPassword = async (token, newPassword) => {
     
     return { success: true };
   } catch (error) {
-    console.error('Password reset error:', error);
     return { success: false, error: 'Failed to reset password' };
   }
 };

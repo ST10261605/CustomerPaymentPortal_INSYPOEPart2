@@ -3,7 +3,7 @@ const securityHeaders = (req, res, next) => {
   res.removeHeader('X-Powered-By');
 
   // HSTS in production
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'development') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
   

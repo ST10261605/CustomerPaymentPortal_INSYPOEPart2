@@ -10,7 +10,7 @@ export const loginRateLimiter = rateLimit({
     error: 'Too many login attempts',
     message: 'Too many login attempts. Please try again in 15 minutes.'
   },
-  handler: (req, res, next) => { // ✅ Added 'next' parameter
+  handler: (req, res, next) => { 
     logSecurityEvent({
       type: 'RATE_LIMIT_EXCEEDED',
       ip: req.ip,
@@ -23,14 +23,13 @@ export const loginRateLimiter = rateLimit({
       message: 'Too many login attempts. Please try again in 15 minutes.'
     });
   },
-  skip: (req) => req.method === 'OPTIONS', // ✅ Skip OPTIONS requests
+  skip: (req) => req.method === 'OPTIONS', 
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Account lockout middleware
 export const accountLockout = async (req, res, next) => {
-  // Fix the path check - when used in router, path is relative
   if (req.path === '/login' && req.method === 'POST') {
     const { accountNumber } = req.body;
     
@@ -56,14 +55,13 @@ export const accountLockout = async (req, res, next) => {
           });
         }
       } catch (error) {
-        console.error('Account lockout check error:', error);
-        // Don't block the request if there's a DB error
       }
     }
   }
   
   next();
 };
+
 // Payment rate limiter
 export const paymentRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour

@@ -23,9 +23,6 @@ export default function noSqlSanitize(req, res, next) {
     if (req.body && typeof req.body === 'object') {
       sanitize(req.body);
     }
-
-    // Don't touch req.query or req.params to avoid the error
-    // These are typically handled by Express and less vulnerable to NoSQL injection
     
     next();
   } catch (err) {

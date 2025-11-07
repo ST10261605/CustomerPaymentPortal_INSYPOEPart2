@@ -11,7 +11,6 @@ import hpp from "hpp";
 import { auditLogger, authAuditLogger } from './middleware/auditLogger.js';
 import csurf from 'csurf';
 
-
 // Import Routes
 import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
@@ -20,8 +19,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 const app = express();
-const sessionStore = new Map(); // Simple in-memory store
-
+const sessionStore = new Map(); 
 
 // Trust proxy
 app.set('trust proxy', 1);
@@ -36,7 +34,6 @@ app.use(cors({
 
 
 app.use((req, res, next) => {
-  // Skip if already responded (like from rate limiter)
   if (res.headersSent) {
     return next();
   }
@@ -47,7 +44,6 @@ app.use((req, res, next) => {
 app.use(express.json({ 
   limit: '10kb',
   verify: (req, res, buf) => {
-    // Check for JSON parsing attacks
     try {
       JSON.parse(buf);
     } catch (e) {
@@ -88,9 +84,6 @@ app.use(auditLogger); // Audit logging for all requests
 
 // Account lockout check
 //app.use('/api/auth/login', accountLockout);
-
-// XSS protection middleware
-//app.use(xss());
 
 // Auth audit logging
 app.use('/api/auth', authAuditLogger);
@@ -133,7 +126,7 @@ app.use(
   })
 );
 
-// Data sanitization - UPDATED ORDER
+// Data sanitization 
 app.use(noSqlSanitize); // Custom NoSQL injection protection
 app.use(hpp()); // HTTP Parameter Pollution protection
 app.use(sanitizeInput); // XSS protection
@@ -164,46 +157,6 @@ app.use("/api/admin", adminRoutes);
 app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
-
-// Rate Limiting
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: "Too many requests from this IP, please try again later",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: {
-    error: "Too many login attempts",
-    message: "Too many login attempts. Please try again in 15 minutes."
-  },
-  standardHeaders: true,
-});
-
-const strictLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 3, // Very strict for sensitive operations
-  message: { error: "Too many attempts, please try again later" },
-  standardHeaders: true,
-});
-
-const paymentLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // Limit payment attempts
-  message: { error: "Too many payment attempts" },
-  standardHeaders: true,
-});
-
-// Apply rate limiting
-//app.use("/api/auth/login", authLimiter);
-//app.use("/api/auth/register", authLimiter);
-//app.use("/api", apiLimiter);
-//app.use("/api/payment", paymentLimiter);
-//app.use("/api/auth/reset-password", strictLimiter);
 
 
 // 404 handler

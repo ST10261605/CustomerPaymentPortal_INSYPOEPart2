@@ -14,15 +14,23 @@ dotenv.config();
 
 const loginAttempts = new NodeCache({ stdTTL: 900 }); // 15-minute cache for failed logins
 
-// Simple function to log authentication events
-function logAuthEvent({ userId, ip, userAgent, success }) {
-  const logLine = `${new Date().toISOString()} | userId=${userId || "unknown"} | ip=${ip} | agent="${userAgent}" | success=${success}\n`;
-  fs.appendFileSync("auth.log", logLine);
+// Enhanced function to log authentication events with error handling
+function logAuthEvent({ userId, ip, userAgent, success, reason = '', event = 'login' }) {
+  const timestamp = new Date().toISOString();
+  const logLine = `${timestamp} | event=${event} | userId=${userId || "unknown"} | ip=${ip} | agent="${userAgent}" | success=${success}${reason ? ` | reason=${reason}` : ''}\n`;
+  
+  try {
+    fs.appendFileSync("auth.log", logLine);
+    // Also log to console for debugging
+  } catch (error) {
+  }
 }
 
 // Register user
 export const registerUser = async (req, res) => {
   const { fullName, idNumber, accountNumber, password } = req.body;
+  const ip = req.ip;
+  const userAgent = req.get("user-agent");
 
   // Validation
   const errors = validateRegistration({ fullName, idNumber, accountNumber, password });
@@ -40,6 +48,14 @@ export const registerUser = async (req, res) => {
     });
     
     if (existingUser) {
+      logAuthEvent({
+        userId: null,
+        ip,
+        userAgent,
+        success: false,
+        reason: 'DUPLICATE_ACCOUNT',
+        event: 'register'
+      });
       return res.status(400).json({ error: "Account number or ID number already exists" });
     }
 
@@ -55,8 +71,26 @@ export const registerUser = async (req, res) => {
     
     await newUser.save();
 
+    // Log successful registration
+    logAuthEvent({
+      userId: newUser._id,
+      ip,
+      userAgent,
+      success: true,
+      event: 'register'
+    });
+
     res.status(201).json({ message: "User registered successfully!" });
   } catch (err) {
+    // Log registration error
+    logAuthEvent({
+      userId: null,
+      ip,
+      userAgent,
+      success: false,
+      reason: err.message,
+      event: 'register'
+    });
     
     // More specific error handling
     if (err.name === 'ValidationError') {
@@ -84,6 +118,13 @@ export const loginUser = async (req, res) => {
     
     // Check if account is locked
     if (user && user.lockedUntil && user.lockedUntil > new Date()) {
+      logAuthEvent({
+        userId: user._id,
+        ip,
+        userAgent,
+        success: false,
+        reason: 'ACCOUNT_LOCKED'
+      });
       return res.status(423).json({ 
         error: "Account temporarily locked",
         message: "Too many failed login attempts. Please try again later." 
@@ -91,6 +132,13 @@ export const loginUser = async (req, res) => {
     }
 
     if (!user) {
+      logAuthEvent({
+        userId: null,
+        ip,
+        userAgent,
+        success: false,
+        reason: 'USER_NOT_FOUND'
+      });
       logFailedLoginAttempt({ accountNumber, ip, userAgent, attemptCount: 1 });
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -105,12 +153,25 @@ export const loginUser = async (req, res) => {
       // Lock account after 5 failed attempts
       if (user.failedLoginAttempts >= 5) {
         user.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-        logLockoutEvent({
+        
+        // Log account lockout using logAuthEvent instead of missing logLockoutEvent
+        logAuthEvent({
           userId: user._id,
-          accountNumber,
           ip,
-          attempts: user.failedLoginAttempts,
-          lockedUntil: user.lockedUntil
+          userAgent,
+          success: false,
+          reason: 'ACCOUNT_LOCKED',
+          attempts: user.failedLoginAttempts
+        });
+      } else {
+        // Log failed attempt
+        logAuthEvent({
+          userId: user._id,
+          ip,
+          userAgent,
+          success: false,
+          reason: 'INVALID_PASSWORD',
+          attempts: user.failedLoginAttempts
         });
       }
       
@@ -146,7 +207,15 @@ export const loginUser = async (req, res) => {
     
     await user.save();
 
-    // Log successful login
+    // Log successful login using consistent logAuthEvent
+    logAuthEvent({
+      userId: user._id,
+      ip,
+      userAgent,
+      success: true
+    });
+
+    // Also log to security service if needed
     logSecurityEvent({
       type: 'LOGIN_SUCCESS',
       userId: user._id,
@@ -162,7 +231,6 @@ export const loginUser = async (req, res) => {
     const sessionId = crypto.randomBytes(16).toString('hex');
 
     // Store session info (use Redis in production)
-    // Make sure you have sessionStore configured in your app
     if (req.sessionStore) {
       req.sessionStore.set(sessionId, {
         userId: user._id,
@@ -171,7 +239,6 @@ export const loginUser = async (req, res) => {
         createdAt: new Date()
       });
     } else {
-      console.warn('sessionStore not available - sessions will not be persisted');
     }
 
     // Secure cookie for refresh token
@@ -191,6 +258,15 @@ export const loginUser = async (req, res) => {
       } 
     });
   } catch (err) {
+    // Log login error
+    logAuthEvent({
+      userId: null,
+      ip,
+      userAgent,
+      success: false,
+      reason: err.message
+    });
+    
     logSecurityEvent({
       type: 'LOGIN_ERROR',
       accountNumber,
@@ -204,10 +280,20 @@ export const loginUser = async (req, res) => {
 // register Admin (temporary setup)
 export const registerAdmin = async (req, res) => {
   const { fullName, idNumber, accountNumber, password } = req.body;
+  const ip = req.ip;
+  const userAgent = req.get("user-agent");
 
   try {
     const existingAdmin = await User.findOne({ role: "Admin" });
     if (existingAdmin) {
+      logAuthEvent({
+        userId: null,
+        ip,
+        userAgent,
+        success: false,
+        reason: 'ADMIN_EXISTS',
+        event: 'register_admin'
+      });
       return res.status(400).json({ error: "Admin already exists" });
     }
 
@@ -223,8 +309,25 @@ export const registerAdmin = async (req, res) => {
     });
 
     await admin.save();
+    
+    logAuthEvent({
+      userId: admin._id,
+      ip,
+      userAgent,
+      success: true,
+      event: 'register_admin'
+    });
+    
     res.status(201).json({ message: "Admin registered successfully!" });
   } catch (err) {
+    logAuthEvent({
+      userId: null,
+      ip,
+      userAgent,
+      success: false,
+      reason: err.message,
+      event: 'register_admin'
+    });
     res.status(500).json({ error: "Server error" });
   }
 };
@@ -233,15 +336,35 @@ export const registerAdmin = async (req, res) => {
 export const registerEmployee = async (req, res) => {
   const { fullName, idNumber, accountNumber, password } = req.body;
   const requester = req.user; // comes from JWT middleware
+  const ip = req.ip;
+  const userAgent = req.get("user-agent");
 
   try {
     const admin = await User.findById(requester.userId);
     if (!admin || admin.role !== "Admin") {
+      logAuthEvent({
+        userId: requester.userId,
+        ip,
+        userAgent,
+        success: false,
+        reason: 'UNAUTHORIZED_EMPLOYEE_REGISTRATION',
+        event: 'register_employee'
+      });
       return res.status(403).json({ error: "Access denied. Admins only." });
     }
 
     const existingUser = await User.findOne({ accountNumber });
-    if (existingUser) return res.status(400).json({ error: "Employee already exists" });
+    if (existingUser) {
+      logAuthEvent({
+        userId: null,
+        ip,
+        userAgent,
+        success: false,
+        reason: 'EMPLOYEE_EXISTS',
+        event: 'register_employee'
+      });
+      return res.status(400).json({ error: "Employee already exists" });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
@@ -255,8 +378,25 @@ export const registerEmployee = async (req, res) => {
     });
 
     await employee.save();
+    
+    logAuthEvent({
+      userId: employee._id,
+      ip,
+      userAgent,
+      success: true,
+      event: 'register_employee'
+    });
+    
     res.status(201).json({ message: "Employee registered successfully!" });
   } catch (err) {
+    logAuthEvent({
+      userId: null,
+      ip,
+      userAgent,
+      success: false,
+      reason: err.message,
+      event: 'register_employee'
+    });
     res.status(500).json({ error: "Server error" });
   }
 };
@@ -264,6 +404,8 @@ export const registerEmployee = async (req, res) => {
 // Password reset endpoints
 export const requestPasswordResetController = async (req, res) => {
   const { accountNumber } = req.body;
+  const ip = req.ip;
+  const userAgent = req.get("user-agent");
   
   if (!accountNumber) {
     return res.status(400).json({ error: "Account number is required" });
@@ -272,16 +414,33 @@ export const requestPasswordResetController = async (req, res) => {
   const result = await requestPasswordReset(accountNumber);
   
   if (result.success) {
+    logAuthEvent({
+      userId: result.userId,
+      ip,
+      userAgent,
+      success: true,
+      event: 'password_reset_request'
+    });
     res.json({ 
       message: "If an account exists with this number, a reset link has been sent." 
     });
   } else {
+    logAuthEvent({
+      userId: null,
+      ip,
+      userAgent,
+      success: false,
+      reason: result.error,
+      event: 'password_reset_request'
+    });
     res.status(400).json({ error: result.error });
   }
 };
 
 export const resetPasswordController = async (req, res) => {
   const { token, newPassword } = req.body;
+  const ip = req.ip;
+  const userAgent = req.get("user-agent");
   
   if (!token || !newPassword) {
     return res.status(400).json({ error: "Token and new password are required" });
@@ -296,8 +455,23 @@ export const resetPasswordController = async (req, res) => {
   const result = await resetPassword(token, newPassword);
   
   if (result.success) {
+    logAuthEvent({
+      userId: result.userId,
+      ip,
+      userAgent,
+      success: true,
+      event: 'password_reset'
+    });
     res.json({ message: "Password reset successfully" });
   } else {
+    logAuthEvent({
+      userId: null,
+      ip,
+      userAgent,
+      success: false,
+      reason: result.error,
+      event: 'password_reset'
+    });
     res.status(400).json({ error: result.error });
   }
 };
