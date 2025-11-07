@@ -1,11 +1,11 @@
+import helmet from 'helmet';
+
 const securityHeaders = (req, res, next) => {
   // Remove potentially dangerous headers
   res.removeHeader('X-Powered-By');
 
-  // HSTS in production
-  if (process.env.NODE_ENV === 'development') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
+ // HSTS header
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   
   // Set security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
