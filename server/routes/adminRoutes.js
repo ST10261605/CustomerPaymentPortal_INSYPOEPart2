@@ -1,6 +1,7 @@
 // routes/adminRoutes.js
 import express from "express";
-import { authMiddleware, authorizeRole } from "../middleware/authMiddleware.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { requireRole } from "../middleware/roleMiddleware.js"; 
 import User from "../models/User.js";
 import { logSecurityEvent } from "../services/securityService.js";
 
@@ -9,7 +10,7 @@ const router = express.Router();
 // Get locked accounts (Admin only)
 router.get("/locked-accounts", 
   authMiddleware, 
-  authorizeRole("admin"),
+  requireRole(["Admin"]),
   async (req, res) => {
     try {
       const lockedUsers = await User.find({
@@ -27,7 +28,7 @@ router.get("/locked-accounts",
 // Unlock specific account (Admin only)
 router.post("/unlock-account/:userId", 
   authMiddleware, 
-  authorizeRole("admin"),
+  requireRole(["Admin"]), 
   async (req, res) => {
     try {
       const { userId } = req.params;
@@ -76,7 +77,7 @@ router.post("/unlock-account/:userId",
 // Force unlock by account number (Admin only)
 router.post("/unlock-by-account", 
   authMiddleware, 
-  authorizeRole("admin"),
+  requireRole(["Admin"]), 
   async (req, res) => {
     try {
       const { accountNumber } = req.body;
