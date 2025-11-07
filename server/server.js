@@ -24,7 +24,7 @@ httpApp.use((req, res) => {
   res.redirect(301, `https://localhost:${PORT}${req.url}`);
 });
 
-// Start HTTP server on port 8080 (should work based on netstat)
+// Start HTTP server on port 8080 
 const httpServer = http.createServer(httpApp);
 
 httpServer.listen(80, 'localhost', () => {
