@@ -16,6 +16,7 @@ import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -87,6 +88,9 @@ app.use(auditLogger); // Audit logging for all requests
 
 // Auth audit logging
 app.use('/api/auth', authAuditLogger);
+
+//using transaction routes
+app.use("/api", transactionRoutes);
 
 // Basic security headers 
 app.use((req, res, next) => {
