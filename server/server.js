@@ -11,7 +11,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
-//SSL configuration 
+// SSL configuration 
 const options = {
   key: fs.readFileSync("./ssl/privatekey.pem"),
   cert: fs.readFileSync("./ssl/certificate.pem")
@@ -20,18 +20,19 @@ const options = {
 // HTTP to HTTPS redirect app
 const httpApp = express();
 httpApp.use((req, res) => {
-  console.log(`Redirecting HTTP to HTTPS`);
-  res.redirect(301, `https://localhost:${PORT}${req.url}`);
+  const httpsUrl = `https://${req.headers.host.replace(/:80$/, `:${PORT}`)}${req.url}`;
+  console.log(`Redirecting HTTP to HTTPS: ${httpsUrl}`);
+  res.redirect(301, httpsUrl);
 });
 
-// Start HTTP server on port 8080 
+// Start HTTP server on port 80
 const httpServer = http.createServer(httpApp);
 
 httpServer.listen(80, 'localhost', () => {
   console.log('HTTP redirect server running on http://localhost:80');
 });
 
-
+// Start HTTPS server
 https.createServer(options, app).listen(PORT, () => {
   console.log(`Secure backend running at https://localhost:${PORT}`);
 });
