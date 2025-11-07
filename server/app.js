@@ -18,6 +18,7 @@ import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -59,6 +60,9 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // ← ADDED PATCH
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"]
 }));
+
+//using transaction routes
+app.use("/api", transactionRoutes);
 
 app.use((req, res, next) => {
   if (res.headersSent) {

@@ -27,7 +27,6 @@ httpApp.use((req, res) => {
 });
 
 // Start HTTP server on port 80
-// Start HTTP server on port 80
 const httpServer = http.createServer(httpApp);
 
 httpServer.listen(8080, 'localhost', () => {
