@@ -6,7 +6,7 @@ import { validateRegistration } from "../utils/validation.js";
 import NodeCache from "node-cache";
 import fs from "fs";
 import crypto from 'crypto';
-import { requestPasswordReset,verifyResetToken,resetPassword } from '../services/passwordResetService.js';
+import { requestPasswordReset, verifyResetToken, resetPassword } from '../services/passwordResetService.js';
 import { validatePasswordStrength } from '../utils/validation.js';
 import { logSecurityEvent, logFailedLoginAttempt } from '../services/securityService.js';
 
@@ -21,8 +21,10 @@ function logAuthEvent({ userId, ip, userAgent, success, reason = '', event = 'lo
   
   try {
     fs.appendFileSync("auth.log", logLine);
-    // Also log to console for debugging
+    // log to console for debugging
+    console.log(logLine);
   } catch (error) {
+    console.error('Failed to write auth log:', error);
   }
 }
 
@@ -154,7 +156,7 @@ export const loginUser = async (req, res) => {
       if (user.failedLoginAttempts >= 5) {
         user.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
         
-        // Log account lockout using logAuthEvent instead of missing logLockoutEvent
+        // Log account lockout using logAuthEvent
         logAuthEvent({
           userId: user._id,
           ip,
@@ -215,7 +217,7 @@ export const loginUser = async (req, res) => {
       success: true
     });
 
-    // Also log to security service if needed
+    // log to security service if needed
     logSecurityEvent({
       type: 'LOGIN_SUCCESS',
       userId: user._id,
@@ -224,7 +226,7 @@ export const loginUser = async (req, res) => {
       userAgent
     });
 
-    // Generate tokenswith role included
+    // Generate tokens with role included
     const accessToken = jwt.sign(
       { 
         userId: user._id, 
@@ -245,7 +247,7 @@ export const loginUser = async (req, res) => {
 
     const sessionId = crypto.randomBytes(16).toString('hex');
 
-    // Store session info (use Redis in production)
+    // Store session info
     if (req.sessionStore) {
       req.sessionStore.set(sessionId, {
         userId: user._id,
@@ -254,6 +256,7 @@ export const loginUser = async (req, res) => {
         createdAt: new Date()
       });
     } else {
+      console.log('Session store not available');
     }
 
     // Secure cookie for refresh token
@@ -270,16 +273,10 @@ export const loginUser = async (req, res) => {
         id: user._id, 
         fullName: user.fullName, 
         role: user.role 
-      } 
+      },
+      sessionId 
     });
-    res.json({ 
-      accessToken, 
-      user: { 
-        id: user._id, 
-        fullName: user.fullName, 
-        role: user.role 
-      } 
-    });
+
   } catch (err) {
     // Log login error
     logAuthEvent({
@@ -355,11 +352,12 @@ export const registerAdmin = async (req, res) => {
   }
 };
 
-
-// Register Employee (Admin only)
+// Register Employee (Admin only) 
 export const registerEmployee = async (req, res) => {
   const { fullName, idNumber, accountNumber, password } = req.body;
   const requester = req.user; // comes from JWT middleware
+  const ip = req.ip;
+  const userAgent = req.get("user-agent");
 
   console.log("Register Employee Request:", {
     body: req.body,
@@ -372,7 +370,7 @@ export const registerEmployee = async (req, res) => {
       return res.status(401).json({ error: "Authentication required" });
     }
 
-    //verify admin status via database -- extra layer of security
+    // Verify admin status via database -- extra layer of security
     const admin = await User.findById(requester.userId);
     if (!admin || admin.role !== "Admin") {
       logAuthEvent({
@@ -389,7 +387,6 @@ export const registerEmployee = async (req, res) => {
     // Check if employee already exists
     const existingUser = await User.findOne({ accountNumber });
     if (existingUser) {
-      {
       logAuthEvent({
         userId: null,
         ip,
@@ -399,7 +396,6 @@ export const registerEmployee = async (req, res) => {
         event: 'register_employee'
       });
       return res.status(400).json({ error: "Employee already exists" });
-    }
     }
 
     // Create new employee
