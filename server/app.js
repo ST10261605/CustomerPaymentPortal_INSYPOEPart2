@@ -19,6 +19,7 @@ import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+///import transactionRoutes from "./routes/transactionRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -207,6 +208,8 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/admin", adminRoutes); 
 app.use('/api/login', bruteforce.prevent);
+//app.use("/api/", transactionRoutes);
+
 
 // Health check
 app.get("/", (req, res) => {
