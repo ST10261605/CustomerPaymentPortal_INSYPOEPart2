@@ -112,7 +112,7 @@ function Payment() {
         throw new Error("Please log in to make a payment");
       }
 
-      const res = await api.post("/payment", paymentData, {
+      const res = await api.post("/payments", paymentData, {
         timeout: 30000,
         headers: {
           'Content-Type': 'application/json',

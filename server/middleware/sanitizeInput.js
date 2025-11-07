@@ -1,26 +1,47 @@
-import validator from "validator";
+// middleware/sanitizeInput.js
+import xss from "xss";
 
-const sanitizeInput = (req, res, next) => {
-  // Sanitize request body
-  if (req.body) {
-    Object.keys(req.body).forEach(key => {
-      if (typeof req.body[key] === 'string') {
-        // Trim and escape HTML characters
-        req.body[key] = validator.escape(validator.trim(req.body[key]));
+/**
+ * Sanitize all incoming request data to prevent XSS attacks.
+ */
+export default function sanitizeInput(req, res, next) {
+  try {
+    // Helper function to clean objects recursively
+    const sanitizeObject = (obj) => {
+      if (!obj || typeof obj !== 'object') return;
+      
+      for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          if (typeof obj[key] === "string") {
+            // Clean string inputs with XSS protection
+            obj[key] = xss(obj[key].trim());
+          } else if (typeof obj[key] === "object" && obj[key] !== null) {
+            // Recurse nested objects
+            sanitizeObject(obj[key]);
+          }
+        }
       }
-    });
-  }
-  
-  // Sanitize query parameters
-  if (req.query) {
-    Object.keys(req.query).forEach(key => {
-      if (typeof req.query[key] === 'string') {
-        req.query[key] = validator.escape(validator.trim(req.query[key]));
-      }
-    });
-  }
-  
-  next();
-};
+    };
 
-export default sanitizeInput;
+    // Sanitize request body (this is safe to modify)
+    if (req.body && typeof req.body === 'object') {
+      sanitizeObject(req.body);
+    }
+
+    // Create sanitized copies for query and params (optional - only if needed in your routes)
+    if (req.query && typeof req.query === 'object') {
+      req.sanitizedQuery = { ...req.query };
+      sanitizeObject(req.sanitizedQuery);
+    }
+
+    if (req.params && typeof req.params === 'object') {
+      req.sanitizedParams = { ...req.params };
+      sanitizeObject(req.sanitizedParams);
+    }
+
+    next();
+  } catch (err) {
+    console.error("Sanitization error:", err);
+    next(err);
+  }
+}
