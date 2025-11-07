@@ -1,28 +1,35 @@
+// middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { logSecurityEvent } from "../services/securityService.js";
+import User from "../models/User.js"; // Import User model
 
-dotenv.config();
+export const authMiddleware = async (req, res, next) => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
 
-export const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers["authorization"] || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
-  if (!token) return res.status(401).json({ msg: "No token, authorization denied" });
+  if (!token) {
+    return res.status(401).json({ error: "No token, authorization denied" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-     req.user = {
-      id: decoded.userId || decoded.employeeId || decoded.id || null,
-      role: decoded.role || null,
-      jti: decoded.jti || null // optional token id for rotation/revocation
-    };
+    
+    // verify user still exists and get fresh data from DB
+    const user = await User.findById(decoded.userId).select('-passwordHash');
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+    req.user = { userId: user._id, role: user.role };
+    
     next();
   } catch (err) {
-    logSecurityEvent({ event: "INVALID_TOKEN", ip: req.ip, err: err.message });
-    res.status(401).json({ msg: "Token is not valid" });
+    console.error("Token verification error:", err);
+    
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: "Token expired" });
+    }
+    
+    res.status(401).json({ error: "Token is not valid" });
   }
 };
-
 // Role-based authorization
 export const authorizeRole = (role) => {
   return (req, res, next) => {

@@ -1,6 +1,6 @@
 # International Payment System: Overview
 
-The international payment system is a banking platform that enables customers to make secure international payments while bank staff are provided with a portal that verifies and processes the transactions through SWIFT.
+The international payment system is a banking platform that enables customers to make secure international payments while bank staff are provided with a portal that verifies and processes the transactions through SWIFT. (Note: Please refer to the Demo Video to view all the functioning features)
 
 
 # System Architecture

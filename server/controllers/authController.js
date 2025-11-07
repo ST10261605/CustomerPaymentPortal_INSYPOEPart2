@@ -6,7 +6,7 @@ import { validateRegistration } from "../utils/validation.js";
 import NodeCache from "node-cache";
 import fs from "fs";
 import crypto from 'crypto';
-import { requestPasswordReset,verifyResetToken,resetPassword } from '../services/passwordResetService.js';
+import { requestPasswordReset, verifyResetToken, resetPassword } from '../services/passwordResetService.js';
 import { validatePasswordStrength } from '../utils/validation.js';
 import { logSecurityEvent, logFailedLoginAttempt } from '../services/securityService.js';
 
@@ -21,8 +21,10 @@ function logAuthEvent({ userId, ip, userAgent, success, reason = '', event = 'lo
   
   try {
     fs.appendFileSync("auth.log", logLine);
-    // Also log to console for debugging
+    // log to console for debugging
+    console.log(logLine);
   } catch (error) {
+    console.error('Failed to write auth log:', error);
   }
 }
 
@@ -34,7 +36,7 @@ export const registerUser = async (req, res) => {
 
   // Validation
   const errors = validateRegistration({ fullName, idNumber, accountNumber, password });
-  
+
   if (errors.length > 0) {
     return res.status(400).json({ errors });
   }
@@ -154,7 +156,7 @@ export const loginUser = async (req, res) => {
       if (user.failedLoginAttempts >= 5) {
         user.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
         
-        // Log account lockout using logAuthEvent instead of missing logLockoutEvent
+        // Log account lockout using logAuthEvent
         logAuthEvent({
           userId: user._id,
           ip,
@@ -215,7 +217,7 @@ export const loginUser = async (req, res) => {
       success: true
     });
 
-    // Also log to security service if needed
+    // log to security service if needed
     logSecurityEvent({
       type: 'LOGIN_SUCCESS',
       userId: user._id,
@@ -224,13 +226,28 @@ export const loginUser = async (req, res) => {
       userAgent
     });
 
-    // Generate tokens
-    const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
-    const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+    // Generate tokens with role included
+    const accessToken = jwt.sign(
+      { 
+        userId: user._id, 
+        role: user.role  // add role to the token
+      }, 
+      process.env.ACCESS_TOKEN_SECRET, 
+      { expiresIn: "1h" } // Increased to 1 hour for admin sessions
+    );
+    
+    const refreshToken = jwt.sign(
+      { 
+        userId: user._id,
+        role: user.role  // Add role to refresh token as well
+      }, 
+      process.env.REFRESH_TOKEN_SECRET, 
+      { expiresIn: "7d" }
+    );
 
     const sessionId = crypto.randomBytes(16).toString('hex');
 
-    // Store session info (use Redis in production)
+    // Store session info
     if (req.sessionStore) {
       req.sessionStore.set(sessionId, {
         userId: user._id,
@@ -239,6 +256,7 @@ export const loginUser = async (req, res) => {
         createdAt: new Date()
       });
     } else {
+      console.log('Session store not available');
     }
 
     // Secure cookie for refresh token
@@ -255,8 +273,10 @@ export const loginUser = async (req, res) => {
         id: user._id, 
         fullName: user.fullName, 
         role: user.role 
-      } 
+      },
+      sessionId 
     });
+
   } catch (err) {
     // Log login error
     logAuthEvent({
@@ -332,14 +352,25 @@ export const registerAdmin = async (req, res) => {
   }
 };
 
-// Register Employee (Admin only)
+// Register Employee (Admin only) 
 export const registerEmployee = async (req, res) => {
   const { fullName, idNumber, accountNumber, password } = req.body;
   const requester = req.user; // comes from JWT middleware
   const ip = req.ip;
   const userAgent = req.get("user-agent");
 
+  console.log("Register Employee Request:", {
+    body: req.body,
+    requester: requester
+  });
+
   try {
+    // Check if requester is authenticated and is an Admin
+    if (!requester || !requester.userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    // Verify admin status via database -- extra layer of security
     const admin = await User.findById(requester.userId);
     if (!admin || admin.role !== "Admin") {
       logAuthEvent({
@@ -353,6 +384,7 @@ export const registerEmployee = async (req, res) => {
       return res.status(403).json({ error: "Access denied. Admins only." });
     }
 
+    // Check if employee already exists
     const existingUser = await User.findOne({ accountNumber });
     if (existingUser) {
       logAuthEvent({
@@ -366,6 +398,7 @@ export const registerEmployee = async (req, res) => {
       return res.status(400).json({ error: "Employee already exists" });
     }
 
+    // Create new employee
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
@@ -379,6 +412,8 @@ export const registerEmployee = async (req, res) => {
 
     await employee.save();
     
+    console.log("Employee registered successfully by admin:", requester.userId);
+    
     logAuthEvent({
       userId: employee._id,
       ip,
@@ -388,7 +423,9 @@ export const registerEmployee = async (req, res) => {
     });
     
     res.status(201).json({ message: "Employee registered successfully!" });
+    
   } catch (err) {
+    console.error("Register Employee Error:", err);
     logAuthEvent({
       userId: null,
       ip,
@@ -397,7 +434,7 @@ export const registerEmployee = async (req, res) => {
       reason: err.message,
       event: 'register_employee'
     });
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error: " + err.message });
   }
 };
 
