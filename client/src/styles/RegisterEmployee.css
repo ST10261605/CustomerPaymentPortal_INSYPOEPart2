@@ -1,0 +1,265 @@
+.register-employee-page-container {
+    width: 100%;
+    min-height: 100vh;
+    background: radial-gradient(circle at top left, #19183B 0%, #708993 100%);
+    font-family: "Poppins", sans-serif;
+    color: #E7F2EF;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .register-employee-page {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    position: relative;
+  }
+  
+  /* Frosted glass card */
+  .register-employee-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-radius: 25px;
+    padding: 40px 35px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Title with shimmer effect */
+  .register-employee-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(161, 194, 189, 0.5);
+    margin-bottom: 10px;
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    background: linear-gradient(
+      90deg,
+      #e7f2ef 0%,
+      #ffffff 20%,
+      #a1c2bd 40%,
+      #e7f2ef 60%,
+      #b0ade6 80%,
+      #7671d3 100%
+    );
+    background-size: 200% auto;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: shimmerMove 10s linear infinite;
+  }
+  
+  .register-employee-subtitle {
+    text-align: center;
+    color: rgba(231, 242, 239, 0.8);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+  }
+  
+  /* Form styling */
+  .register-employee-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .input-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input-group label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: #E7F2EF;
+  }
+  
+  .input-group input {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #E7F2EF;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .input-group input::placeholder {
+    color: rgba(231, 242, 239, 0.6);
+  }
+  
+  .input-group input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: inset 0 0 12px rgba(161, 194, 189, 0.6), 0 0 20px rgba(161, 194, 189, 0.3);
+    border-color: rgba(161, 194, 189, 0.5);
+  }
+  
+  .input-group input.error {
+    border-color: rgba(255, 100, 100, 0.6);
+    box-shadow: inset 0 0 12px rgba(255, 100, 100, 0.3);
+  }
+  
+  .error-text {
+    color: #FF6464;
+    font-size: 0.875rem;
+    margin-top: 6px;
+    font-weight: 500;
+    text-shadow: 0 0 10px rgba(255, 100, 100, 0.5);
+  }
+  
+  /* Register button */
+  .register-employee-button {
+    margin-top: 10px;
+    padding: 16px 0;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background-color: #A1C2BD;
+    color: #19183B;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(161, 194, 189, 0.5);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .register-employee-button:hover:not(:disabled) {
+    background-color: #E7F2EF;
+    box-shadow: 0 0 25px rgba(161, 194, 189, 0.8);
+  }
+  
+  .register-employee-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+  
+  .register-employee-button.loading {
+    background: linear-gradient(135deg, #A1C2BD, #708993);
+  }
+  
+  /* Messages */
+  .register-employee-message {
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    text-align: center;
+    animation: fadeIn 0.6s ease-in-out;
+    backdrop-filter: blur(10px);
+  }
+  
+  .register-employee-message.success {
+    background: rgba(161, 194, 189, 0.2);
+    color: #A1C2BD;
+    border: 1px solid rgba(161, 194, 189, 0.3);
+    box-shadow: 0 0 20px rgba(161, 194, 189, 0.4);
+  }
+  
+  .register-employee-message.error {
+    background: rgba(255, 100, 100, 0.2);
+    color: #FF6464;
+    border: 1px solid rgba(255, 100, 100, 0.3);
+    box-shadow: 0 0 20px rgba(255, 100, 100, 0.4);
+  }
+  
+  /* Glowing background animation */
+  .glow-behind {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(112, 137, 147, 0.4) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(120px);
+    animation: glowShift 12s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+  
+  /* Animations */
+  @keyframes shimmerMove {
+    0% {
+      background-position: 200% center;
+    }
+    100% {
+      background-position: -200% center;
+    }
+  }
+  
+  @keyframes glowShift {
+    0% { 
+      transform: translate(-60%, -50%) scale(1); 
+      opacity: 0.7; 
+    }
+    50% { 
+      transform: translate(-50%, -55%) scale(1.1); 
+      opacity: 0.9; 
+    }
+    100% { 
+      transform: translate(-55%, -50%) scale(1); 
+      opacity: 0.7; 
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .register-employee-page {
+      padding: 1rem;
+    }
+    
+    .register-employee-card {
+      padding: 30px 25px;
+      margin: 1rem;
+    }
+    
+    .register-employee-title {
+      font-size: 1.8rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .register-employee-card {
+      padding: 25px 20px;
+    }
+    
+    .register-employee-title {
+      font-size: 1.6rem;
+    }
+    
+    .input-group input {
+      padding: 12px 14px;
+    }
+    
+    .register-employee-button {
+      padding: 14px 0;
+    }
+  }
