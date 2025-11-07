@@ -12,12 +12,12 @@ import securityHeaders from "./middleware/securityHeaders.js";
 import csurf from 'csurf';
 import ExpressBrute from 'express-brute';
 
+
 // Import Routes
 import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import transactionRoutes from "./routes/transactionRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -94,9 +94,6 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 app.use(securityHeaders);
-
-//using transaction routes
-app.use("/api", transactionRoutes);
 
 // Basic security headers 
 app.use((req, res, next) => {
@@ -209,8 +206,6 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/admin", adminRoutes); 
 app.use('/api/login', bruteforce.prevent);
-//app.use("/api/", transactionRoutes);
-
 
 // Health check
 app.get("/", (req, res) => {
