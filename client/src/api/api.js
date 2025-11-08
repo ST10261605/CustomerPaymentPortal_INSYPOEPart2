@@ -63,78 +63,70 @@ export const getCsrfToken = async () => {
   return csrfPromise;
 };
 
-// Request interceptor
+// Request interceptor - SIMPLIFIED
 api.interceptors.request.use(
-  async (config) => {
-    // Skip auth refresh for refresh token requests to prevent infinite loop
-    if (config.skipAuthRefresh) {
-      return config;
-    }
-
-    // Add CSRF token for state-changing requests
-    if (csrfToken && (config.method === 'post' || config.method === 'put' || config.method === 'delete' || config.method === 'patch')) {
-      config.headers['X-CSRF-Token'] = csrfToken;
-    }
-
-    // Add security header for non-GET requests
-    if (config.method !== 'get') {
-      config.headers['X-Requested-With'] = 'XMLHttpRequest';
-    }
-
-    // Add authorization token if available
+  (config) => {
+    console.log("🔄 Axios Request:", config.method?.toUpperCase(), config.url);
+    
+    // Add auth token
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
+    
+    // Add CSRF token for non-GET requests
+    if (csrfToken && config.method !== 'get') {
+      config.headers['X-CSRF-Token'] = csrfToken;
+    }
+    
+    // Ensure content type
+    if (config.data && !config.headers['Content-Type']) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+    
     return config;
   },
   (error) => {
+    console.error("❌ Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor
+
+// SINGLE Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("✅ Response received:", response.status);
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
+    
+    console.error("❌ Response error:", error.response?.status, error.response?.data);
 
     // Handle CSRF token errors
     if (error.response?.status === 403 && 
-        (error.response.data?.code === 'EBADCSRFTOKEN' || 
-         error.response.data?.message?.includes('CSRF') ||
+        (error.response.data?.message?.includes('CSRF') ||
          error.response.data?.error?.includes('CSRF'))) {
       try {
-        await getCsrfToken();
-        if (csrfToken && (originalRequest.method === 'post' || originalRequest.method === 'put' || originalRequest.method === 'delete')) {
+        console.log("🔄 CSRF token expired, fetching new one...");
+        const response = await api.get('/csrf-token');
+        csrfToken = response.data.csrfToken;
+        
+        // Retry the original request with new CSRF token
+        if (originalRequest.method !== 'get') {
           originalRequest.headers['X-CSRF-Token'] = csrfToken;
         }
         return api(originalRequest);
       } catch (csrfError) {
+        console.error("❌ CSRF token refresh failed:", csrfError);
         return Promise.reject(csrfError);
       }
     }
 
-     // Handle authentication errors with token refresh
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.skipAuthRefresh) {
-      originalRequest._retry = true;
-      
-      try {
-        const newToken = await refreshAuthToken();
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return api(originalRequest);
-      } catch (refreshError) {
-        // Redirect to login if refresh fails
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
-    }
-
     // Handle authentication errors
-    if (error.response?.status === 401 && !originalRequest.skipAuthRefresh) {
+    if (error.response?.status === 401) {
+      console.log("🔐 Authentication failed, redirecting to login...");
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
       window.location.href = '/login';

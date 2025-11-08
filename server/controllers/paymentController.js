@@ -4,6 +4,19 @@ import Transaction from "../models/Transaction.js";
 // Create a new payment
 export const createPayment = async (req, res) => {
   try {
+    console.log("🔹 Payment creation started");
+    console.log("🔹 Request body:", req.body);
+    console.log("🔹 User from auth:", req.user);
+
+    // Check if req.body exists
+    if (!req.body || Object.keys(req.body).length === 0) {
+      console.log("❌ Request body is empty or undefined");
+      return res.status(400).json({ 
+        error: "Request body is missing or empty",
+        details: "Make sure you're sending JSON data with proper headers"
+      });
+    }
+
     const {
       amount,
       currency,
@@ -14,20 +27,44 @@ export const createPayment = async (req, res) => {
       provider
     } = req.body;
 
+    // Validate required fields
+    const requiredFields = ['amount', 'currency', 'recipientName', 'recipientAccount', 'swiftCode', 'provider'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+
+    if (missingFields.length > 0) {
+      console.log("❌ Missing required fields:", missingFields);
+      return res.status(400).json({
+        error: "Missing required fields",
+        missingFields: missingFields,
+        requiredFields: requiredFields
+      });
+    }
+
+    // Validate amount is a positive number
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      return res.status(400).json({
+        error: "Amount must be a valid number greater than 0"
+      });
+    }
+
+    console.log("✅ Validation passed, creating transaction...");
+
     // Create new transaction
     const transaction = new Transaction({
-      userId: req.user.userId, // Associate with logged-in user
-      amount,
+      userId: req.user.userId,
+      amount: amountNum,
       currency,
-      recipientName,
-      recipientAccount,
-      swiftCode,
-      description,
+      recipientName: recipientName.trim(),
+      recipientAccount: recipientAccount.trim(),
+      swiftCode: swiftCode.toUpperCase().trim(),
+      description: description?.trim() || `Payment to ${recipientName.trim()}`,
       provider,
-      status: "pending" // All new payments start as pending
+      status: "pending"
     });
 
     await transaction.save();
+    console.log("✅ Transaction saved successfully:", transaction._id);
 
     res.status(201).json({
       message: "Payment created successfully",
@@ -38,12 +75,24 @@ export const createPayment = async (req, res) => {
         recipientName: transaction.recipientName,
         status: transaction.status,
         createdAt: transaction.createdAt
-      }
+      },
+      transactionId: transaction._id
     });
 
   } catch (error) {
-    console.error("Error creating payment:", error);
-    res.status(500).json({ error: "Server error creating payment" });
+    console.error("❌ Error creating payment:", error);
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        error: "Validation error",
+        details: error.message 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: "Server error creating payment",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

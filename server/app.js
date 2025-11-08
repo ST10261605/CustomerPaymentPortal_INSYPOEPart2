@@ -12,7 +12,6 @@ import securityHeaders from "./middleware/securityHeaders.js";
 import csurf from 'csurf';
 import ExpressBrute from 'express-brute';
 
-
 // Import Routes
 import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
@@ -27,6 +26,33 @@ const sessionStore = new Map();
 // Trust proxy
 app.set('trust proxy', 1);
 
+// Body parsing with limits
+app.use(express.json({ 
+  limit: '10kb',
+  verify: (req, res, buf) => {
+    try {
+      JSON.parse(buf);
+    } catch (e) {
+      throw new Error('Invalid JSON');
+    }
+  }
+}));
+
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Cookie parser
+app.use(cookieParser());
+
+app.use(securityHeaders);
+
+// CORS configuration 
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || ['https://localhost:3000', 'https://localhost:5173'],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], 
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"]
+}));
+
 // Configure CSRF protection
 const csrfProtection = csurf({
   cookie: {
@@ -35,6 +61,16 @@ const csrfProtection = csurf({
     sameSite: 'strict'
   }
 });
+
+
+// Basic security headers 
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.removeHeader('X-Powered-By');
+  next();
+});
+
 
 // CSRF error handler
 const csrfErrorHandler = (err, req, res, next) => {
@@ -53,13 +89,7 @@ const csrfErrorHandler = (err, req, res, next) => {
   });
 };
 
-// CORS configuration 
-app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || ['https://localhost:3000', 'https://localhost:5173'],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], 
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"]
-}));
+
 
 //using transaction routes
 app.use("/api", transactionRoutes);
@@ -81,32 +111,7 @@ app.use(helmet({
     preload: true
   }
 }));
-// Body parsing with limits
-app.use(express.json({ 
-  limit: '10kb',
-  verify: (req, res, buf) => {
-    try {
-      JSON.parse(buf);
-    } catch (e) {
-      throw new Error('Invalid JSON');
-    }
-  }
-}));
 
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-// Cookie parser
-app.use(cookieParser());
-
-app.use(securityHeaders);
-
-// Basic security headers 
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.removeHeader('X-Powered-By');
-  next();
-});
 
 // Helmet with CSP
 app.use(
@@ -204,7 +209,7 @@ if (process.env.NODE_ENV === 'production') {
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB error", err));
-
+  
 // Routes (these will be CSRF protected)
 app.use("/api/auth", authRoutes);
 app.use("/api/payments", paymentRoutes); 

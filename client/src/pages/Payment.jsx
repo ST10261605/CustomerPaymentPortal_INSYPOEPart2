@@ -22,9 +22,10 @@ function Payment() {
 
   // Get token from localStorage
   const getAuthToken = () => {
-    return localStorage.getItem("accessToken");
-  };
-
+  const token = localStorage.getItem("accessToken");
+  console.log("Retrieved token:", token ? "Token exists" : "No token found");
+  return token;
+};
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -82,85 +83,90 @@ function Payment() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
-    setMessage("");
+ const handlePayment = async (e) => {
+  e.preventDefault();
+  setMessage("");
 
-    if (!validateForm()) {
-      setMessage("Please fix the errors before submitting.");
-      return;
+  if (!validateForm()) {
+    setMessage("Please fix the errors before submitting.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const paymentData = {
+      amount: parseFloat(formData.amount),
+      currency: formData.currency,
+      provider: formData.provider,
+      recipientAccount: formData.recipientAccount,
+      swiftCode: formData.swiftCode.toUpperCase(),
+      recipientName: formData.recipientName.trim(),
+      description: formData.description.trim() || `Payment to ${formData.recipientName.trim()}`
+    };
+
+    console.log("📤 Sending payment data:", paymentData);
+
+    // Get authentication token
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error("Please log in to make a payment");
     }
 
-    setIsLoading(true);
+    // Use the simplified api call - remove manual headers
+    const res = await api.post("/payments", paymentData, {
+      timeout: 30000
+      // Let the interceptor handle headers
+    });
 
-    try {
-      const paymentData = {
-        amount: parseFloat(formData.amount),
-        currency: formData.currency,
-        provider: formData.provider,
-        recipientAccount: formData.recipientAccount,
-        swiftCode: formData.swiftCode.toUpperCase(),
-        recipientName: formData.recipientName.trim(),
-        description: formData.description.trim() || `Payment to ${formData.recipientName.trim()}`
-      };
+    console.log("✅ Payment response:", res.data);
 
-      console.log("Sending payment data:", paymentData);
+    // Prepare data for the payment details page
+    const paymentReview = {
+      ...paymentData,
+      transactionId: res.data.transactionId || res.data.payment?.id,
+      timestamp: new Date().toLocaleString(),
+      status: "Completed"
+    };
 
-      // Get authentication token
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error("Please log in to make a payment");
+    // Store in localStorage as backup
+    localStorage.setItem("lastPayment", JSON.stringify(paymentReview));
+
+    // Redirect to payment details page with data
+    navigate("/review", { 
+      state: { paymentData: paymentReview } 
+    });
+
+  } catch (err) {
+    console.error("💥 Payment error:", err);
+    
+    let errorMessage = "Payment failed. Please try again.";
+    
+    if (err.response) {
+      const errorData = err.response.data;
+      console.error("Error details:", errorData);
+      
+      errorMessage = errorData.error || 
+                    errorData.message || 
+                    `Server error: ${err.response.status}`;
+      
+      // Handle CSRF errors specifically
+      if (err.response.status === 403 && errorData.message?.includes('CSRF')) {
+        errorMessage = "Security token expired. Please refresh the page and try again.";
       }
-
-      const res = await api.post("/payments", paymentData, {
-        timeout: 30000,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      console.log("Payment response:", res.data);
-
-      // Prepare data for the payment details page
-      const paymentReview = {
-        ...paymentData,
-        transactionId: res.data.transactionId || res.data.payment?.id || `TXN-${Date.now()}`,
-        timestamp: new Date().toLocaleString(),
-        status: "Completed"
-      };
-
-      // Store in localStorage as backup
-      localStorage.setItem("lastPayment", JSON.stringify(paymentReview));
-
-      // Redirect to payment details page with data
-      navigate("/review", { 
-        state: { paymentData: paymentReview } 
-      });
-
-    } catch (err) {
-      console.error("Payment error:", err);
-      
-      let errorMessage = "Payment failed. Please try again.";
-      
-      if (err.response) {
-        errorMessage = err.response.data?.msg || 
-                      err.response.data?.message || 
-                      err.response.data?.error ||
-                      `Server error: ${err.response.status}`;
-      } else if (err.request) {
-        errorMessage = "No response from server. Please check your connection.";
-      } else if (err.code === 'ECONNABORTED') {
-        errorMessage = "Request timeout. Please try again.";
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setMessage(errorMessage);
-    } finally {
-      setIsLoading(false);
+    } else if (err.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else if (err.code === 'ECONNABORTED') {
+      errorMessage = "Request timeout. Please try again.";
+    } else if (err.message) {
+      errorMessage = err.message;
     }
-  };
+    
+    setMessage(errorMessage);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="payment-page-container">
