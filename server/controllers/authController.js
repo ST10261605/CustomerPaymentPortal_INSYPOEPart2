@@ -19,13 +19,6 @@ function logAuthEvent({ userId, ip, userAgent, success, reason = '', event = 'lo
   const timestamp = new Date().toISOString();
   const logLine = `${timestamp} | event=${event} | userId=${userId || "unknown"} | ip=${ip} | agent="${userAgent}" | success=${success}${reason ? ` | reason=${reason}` : ''}\n`;
   
-  try {
-    fs.appendFileSync("auth.log", logLine);
-    // log to console for debugging
-    console.log(logLine);
-  } catch (error) {
-    console.error('Failed to write auth log:', error);
-  }
 }
 
 // Register user
@@ -256,7 +249,6 @@ export const loginUser = async (req, res) => {
         createdAt: new Date()
       });
     } else {
-      console.log('Session store not available');
     }
 
     // Secure cookie for refresh token
@@ -359,11 +351,6 @@ export const registerEmployee = async (req, res) => {
   const ip = req.ip;
   const userAgent = req.get("user-agent");
 
-  console.log("Register Employee Request:", {
-    body: req.body,
-    requester: requester
-  });
-
   try {
     // Check if requester is authenticated and is an Admin
     if (!requester || !requester.userId) {
@@ -411,9 +398,7 @@ export const registerEmployee = async (req, res) => {
     });
 
     await employee.save();
-    
-    console.log("Employee registered successfully by admin:", requester.userId);
-    
+        
     logAuthEvent({
       userId: employee._id,
       ip,
@@ -425,7 +410,6 @@ export const registerEmployee = async (req, res) => {
     res.status(201).json({ message: "Employee registered successfully!" });
     
   } catch (err) {
-    console.error("Register Employee Error:", err);
     logAuthEvent({
       userId: null,
       ip,

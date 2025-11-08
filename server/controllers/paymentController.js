@@ -4,13 +4,9 @@ import Transaction from "../models/Transaction.js";
 // Create a new payment
 export const createPayment = async (req, res) => {
   try {
-    console.log("🔹 Payment creation started");
-    console.log("🔹 Request body:", req.body);
-    console.log("🔹 User from auth:", req.user);
 
     // Check if req.body exists
     if (!req.body || Object.keys(req.body).length === 0) {
-      console.log("❌ Request body is empty or undefined");
       return res.status(400).json({ 
         error: "Request body is missing or empty",
         details: "Make sure you're sending JSON data with proper headers"
@@ -32,7 +28,6 @@ export const createPayment = async (req, res) => {
     const missingFields = requiredFields.filter(field => !req.body[field]);
 
     if (missingFields.length > 0) {
-      console.log("❌ Missing required fields:", missingFields);
       return res.status(400).json({
         error: "Missing required fields",
         missingFields: missingFields,
@@ -48,8 +43,6 @@ export const createPayment = async (req, res) => {
       });
     }
 
-    console.log("✅ Validation passed, creating transaction...");
-
     // Create new transaction
     const transaction = new Transaction({
       userId: req.user.userId,
@@ -64,7 +57,6 @@ export const createPayment = async (req, res) => {
     });
 
     await transaction.save();
-    console.log("✅ Transaction saved successfully:", transaction._id);
 
     res.status(201).json({
       message: "Payment created successfully",
@@ -80,7 +72,6 @@ export const createPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Error creating payment:", error);
     
     if (error.name === 'ValidationError') {
       return res.status(400).json({ 
@@ -105,7 +96,6 @@ export const getUserPayments = async (req, res) => {
 
     res.json({ payments });
   } catch (error) {
-    console.error("Error fetching user payments:", error);
     res.status(500).json({ error: "Server error fetching payments" });
   }
 };

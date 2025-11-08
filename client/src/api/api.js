@@ -66,7 +66,6 @@ export const getCsrfToken = async () => {
 // Request interceptor - SIMPLIFIED
 api.interceptors.request.use(
   (config) => {
-    console.log("🔄 Axios Request:", config.method?.toUpperCase(), config.url);
     
     // Add auth token
     const token = localStorage.getItem('accessToken');
@@ -87,7 +86,6 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error("❌ Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
@@ -96,20 +94,17 @@ api.interceptors.request.use(
 // SINGLE Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log("✅ Response received:", response.status);
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
     
-    console.error("❌ Response error:", error.response?.status, error.response?.data);
 
     // Handle CSRF token errors
     if (error.response?.status === 403 && 
         (error.response.data?.message?.includes('CSRF') ||
          error.response.data?.error?.includes('CSRF'))) {
       try {
-        console.log("🔄 CSRF token expired, fetching new one...");
         const response = await api.get('/csrf-token');
         csrfToken = response.data.csrfToken;
         
@@ -119,14 +114,12 @@ api.interceptors.response.use(
         }
         return api(originalRequest);
       } catch (csrfError) {
-        console.error("❌ CSRF token refresh failed:", csrfError);
         return Promise.reject(csrfError);
       }
     }
 
     // Handle authentication errors
     if (error.response?.status === 401) {
-      console.log("🔐 Authentication failed, redirecting to login...");
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -136,6 +129,5 @@ api.interceptors.response.use(
   }
 );
 
-// Initialize CSRF token when the app loads
 getCsrfToken();
 export default api;

@@ -26,7 +26,6 @@ export const validateRegistration = (userData) => {
   const passwordErrors = validatePasswordStrength(password);
   errors.push(...passwordErrors);
 
-  console.log('🔍 VALIDATION: Errors found:', errors);
   return errors;
 };
 

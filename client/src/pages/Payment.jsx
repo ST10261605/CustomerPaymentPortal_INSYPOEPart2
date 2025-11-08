@@ -105,7 +105,7 @@ function Payment() {
       description: formData.description.trim() || `Payment to ${formData.recipientName.trim()}`
     };
 
-    console.log("📤 Sending payment data:", paymentData);
+    console.log("Sending payment data:", paymentData);
 
     // Get authentication token
     const token = getAuthToken();
@@ -119,7 +119,7 @@ function Payment() {
       // Let the interceptor handle headers
     });
 
-    console.log("✅ Payment response:", res.data);
+    console.log("Payment response:", res.data);
 
     // Prepare data for the payment details page
     const paymentReview = {
@@ -138,7 +138,6 @@ function Payment() {
     });
 
   } catch (err) {
-    console.error("💥 Payment error:", err);
     
     let errorMessage = "Payment failed. Please try again.";
     

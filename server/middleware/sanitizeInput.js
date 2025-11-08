@@ -33,7 +33,6 @@ export default function sanitizeInput(req, res, next) {
 
     next();
   } catch (err) {
-    console.error("Sanitization error:", err);
     next(err);
   }
 }

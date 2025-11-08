@@ -14,7 +14,6 @@ export const getPendingTransactions = async (req, res) => {
 
     res.json({ transactions });
   } catch (error) {
-    console.error("Error fetching pending transactions:", error);
     res.status(500).json({ error: "Server error fetching pending transactions" });
   }
 };
@@ -23,22 +22,13 @@ export const getPendingTransactions = async (req, res) => {
 export const verifyTransaction = async (req, res) => {
     try {
       const { id } = req.params;
-      
-      console.log("Verify Transaction Request:", {
-        transactionId: id,
-        user: req.user, // Log the user object from middleware
-        userId: req.user?.userId,
-        headers: req.headers
-      });
   
       // Check if user is authenticated
       if (!req.user || !req.user.userId) {
-        console.error("No user found in request");
         return res.status(401).json({ error: "Authentication required" });
       }
   
       const employee = await User.findById(req.user.userId);
-      console.log("Employee found:", employee);
   
       if (!employee) {
         return res.status(404).json({ error: "Employee not found" });
@@ -59,11 +49,8 @@ export const verifyTransaction = async (req, res) => {
         return res.status(404).json({ error: "Transaction not found" });
       }
   
-      console.log("Transaction verified successfully:", transaction._id);
       res.json({ message: "Transaction verified successfully", transaction });
     } catch (error) {
-      console.error("Error verifying transaction:", error);
-      console.error("Error stack:", error.stack);
       res.status(500).json({ error: "Server error verifying transaction: " + error.message });
     }
   };
@@ -90,7 +77,6 @@ export const unverifyTransaction = async (req, res) => {
 
     res.json({ message: "Transaction unverified", transaction });
   } catch (error) {
-    console.error("Error unverifying transaction:", error);
     res.status(500).json({ error: "Server error unverifying transaction" });
   }
 };
@@ -111,15 +97,11 @@ export const submitToSwift = async (req, res) => {
       }
     );
 
-    // not sure if we should integrate with SWIFT API
-    console.log(`Submitted ${result.modifiedCount} transactions to SWIFT`);
-
     res.json({ 
       message: `${result.modifiedCount} transactions submitted to SWIFT successfully`,
       submittedCount: result.modifiedCount
     });
   } catch (error) {
-    console.error("Error submitting to SWIFT:", error);
     res.status(500).json({ error: "Server error submitting to SWIFT" });
   }
 };
