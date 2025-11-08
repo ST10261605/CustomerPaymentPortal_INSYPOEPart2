@@ -223,6 +223,9 @@ Ensure the following is adhered to:
 
 • CircleCI pipeline security is configured
 
+# Demonstration Video
+
+https://youtu.be/biL1HnA3VPo
 
 # First Time Setup - SSL Certificate
 
@@ -247,6 +250,3 @@ When you first run the project, browsers will show security warnings because we 
 
 • Pipeline Security: secure CircleCI context and environment variables
 
-# Demonstration Video
-
-https://youtu.be/biL1HnA3VPo
