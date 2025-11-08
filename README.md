@@ -246,3 +246,7 @@ When you first run the project, browsers will show security warnings because we 
 •	Monitoring: implement security monitoring and alerting
 
 • Pipeline Security: secure CircleCI context and environment variables
+
+# Demonstration Video
+
+https://youtu.be/biL1HnA3VPo
